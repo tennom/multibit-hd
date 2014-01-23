@@ -1,14 +1,25 @@
 package org.multibit.hd.ui.views.components;
 
+import com.google.common.base.Preconditions;
 import org.multibit.hd.core.api.MessageKey;
+import org.multibit.hd.core.api.Recipient;
+import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.ui.i18n.BitcoinSymbol;
 import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.ui.utils.HtmlUtils;
+import org.multibit.hd.ui.views.components.display_amount.DisplayAmountStyle;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.themes.Themes;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
 
 /**
  * <p>Utility to provide the following to UI:</p>
@@ -21,8 +32,15 @@ import java.awt.event.MouseAdapter;
  */
 public class Labels {
 
-  public static final float BALANCE_LARGE_FONT_SIZE = 42.0f;
-  public static final float BALANCE_NORMAL_FONT_SIZE = 28.0f;
+  public static final float BALANCE_HEADER_LARGE_FONT_SIZE = 42.0f;
+  public static final float BALANCE_HEADER_NORMAL_FONT_SIZE = 28.0f;
+
+  public static final float BALANCE_TRANSACTION_LARGE_FONT_SIZE = 18.0f;
+  public static final float BALANCE_TRANSACTION_NORMAL_FONT_SIZE = 14.0f;
+
+  public static final float BALANCE_FEE_LARGE_FONT_SIZE = 14.0f;
+  public static final float BALANCE_FEE_NORMAL_FONT_SIZE = 12.0f;
+
   public static final float PANEL_CLOSE_FONT_SIZE = 28.0f;
 
   /**
@@ -51,7 +69,7 @@ public class Labels {
     JLabel label = newLabel(key);
 
     // Font
-    Font font = label.getFont().deriveFont(BALANCE_LARGE_FONT_SIZE);
+    Font font = label.getFont().deriveFont(BALANCE_HEADER_LARGE_FONT_SIZE);
     label.setFont(font);
 
     // Theme
@@ -71,26 +89,19 @@ public class Labels {
    */
   public static JLabel newNoteLabel(MessageKey[] keys, Object[][] values) {
 
-    String[] safeHtml = new String[keys.length];
+    String[] lines = new String[keys.length];
     for (int i = 0; i < keys.length; i++) {
       if (values.length > 0) {
         // Substitution is required
-        safeHtml[i] = Languages.safeText(keys[i], values[i]);
+        lines[i] = Languages.safeText(keys[i], values[i]);
       } else {
         // Key only
-        safeHtml[i] = Languages.safeText(keys[i]);
+        lines[i] = Languages.safeText(keys[i]);
       }
     }
 
-    // Wrap in HTML to ensure line breaks are respected
-    StringBuilder sb = new StringBuilder("<html>");
-    for (String line : safeHtml) {
-      sb.append(line);
-      sb.append("<br/><br/>");
-    }
-    sb.append("</html>");
-
-    JLabel label = new JLabel(sb.toString());
+    // Wrap in HTML to ensure LTR/RTL and line breaks are respected
+    JLabel label = new JLabel(HtmlUtils.localiseWithLineBreaks(lines));
 
     // Theme
     label.setForeground(Themes.currentTheme.text());
@@ -106,7 +117,7 @@ public class Labels {
    * @param values The substitution values
    * @param status True if a check icon is required, false for a cross
    *
-   * @return A new label
+   * @return A new label with icon binding to allow the AwesomeDecorator to update it
    */
   public static JLabel newStatusLabel(MessageKey key, Object[] values, boolean status) {
 
@@ -122,16 +133,38 @@ public class Labels {
   }
 
   /**
+   * @param walletPath The path to the image resource within the current wallet
+   *
+   * @return A new label with the image or a placeholder if not present
+   */
+  public static JLabel newImageLabel(String walletPath) {
+    final BufferedImage image;
+    try {
+      image = ImageIO.read(new File(walletPath));
+      return new JLabel(new ImageIcon(image));
+    } catch (IOException e) {
+      // Fall back to a default image
+    }
+
+    JLabel label = new JLabel();
+    AwesomeDecorator.applyIcon(AwesomeIcon.USER, label, true, AwesomeDecorator.LARGE_ICON_SIZE);
+    return label;
+
+  }
+
+  /**
+   * @param status True if the status is "good"
+   *
    * @return A new "verification" status label
    */
   public static JLabel newVerificationStatus(boolean status) {
 
-    JLabel label = newStatusLabel(MessageKey.VERIFICATION_STATUS, null, status);
-
-    return label;
+    return newStatusLabel(MessageKey.VERIFICATION_STATUS, null, status);
   }
 
   /**
+   * @param status True if the status is "good"
+   *
    * @return A new "seed phrase created" status label
    */
   public static JLabel newSeedPhraseCreatedStatus(boolean status) {
@@ -139,6 +172,8 @@ public class Labels {
   }
 
   /**
+   * @param status True if the status is "good"
+   *
    * @return A new "wallet password created" status label
    */
   public static JLabel newWalletPasswordCreatedStatus(boolean status) {
@@ -146,6 +181,8 @@ public class Labels {
   }
 
   /**
+   * @param status True if the status is "good"
+   *
    * @return A new "wallet created" status label
    */
   public static JLabel newWalletCreatedStatus(boolean status) {
@@ -153,10 +190,25 @@ public class Labels {
   }
 
   /**
+   * @param status True if the status is "good"
+   *
    * @return A new "backup location" status label
    */
   public static JLabel newBackupLocationStatus(boolean status) {
     return newStatusLabel(MessageKey.BACKUP_LOCATION_STATUS, null, status);
+  }
+
+  /**
+   * @param status True if the status is "good"
+   *
+   * @return A new "exchange rate status" message
+   */
+  public static JLabel newExchangeRateStatus(boolean status) {
+    if (status) {
+      return newStatusLabel(MessageKey.EXCHANGE_RATE_STATUS_OK, null, true);
+    } else {
+      return newStatusLabel(MessageKey.EXCHANGE_RATE_STATUS_WARN, null, false);
+    }
   }
 
   /**
@@ -196,9 +248,13 @@ public class Labels {
    * <li>[3]: Localised exchange rate display</li>
    * </ul>
    *
+   * @param style The display style to use depending on the context
+   *
    * @return A new collection of labels that together form a balance display
    */
-  public static JLabel[] newBalanceLabels() {
+  public static JLabel[] newBalanceLabels(DisplayAmountStyle style) {
+
+    Preconditions.checkNotNull(style, "'style' must be present");
 
     JLabel primaryBalanceLabel = new JLabel("0.00");
     JLabel secondaryBalanceLabel = new JLabel("");
@@ -206,13 +262,31 @@ public class Labels {
     JLabel exchangeLabel = new JLabel("");
 
     // Font
-    Font balanceFont = primaryBalanceLabel.getFont().deriveFont(BALANCE_LARGE_FONT_SIZE);
-    Font decimalFont = primaryBalanceLabel.getFont().deriveFont(BALANCE_NORMAL_FONT_SIZE);
+    final Font largeFont;
+    final Font normalFont;
 
-    primaryBalanceLabel.setFont(balanceFont);
-    secondaryBalanceLabel.setFont(decimalFont);
-    trailingSymbolLabel.setFont(balanceFont);
-    exchangeLabel.setFont(decimalFont);
+    switch (style) {
+      case HEADER:
+        largeFont = primaryBalanceLabel.getFont().deriveFont(BALANCE_HEADER_LARGE_FONT_SIZE);
+        normalFont = primaryBalanceLabel.getFont().deriveFont(BALANCE_HEADER_NORMAL_FONT_SIZE);
+        break;
+      case TRANSACTION_DETAIL_AMOUNT:
+        largeFont = primaryBalanceLabel.getFont().deriveFont(Font.BOLD, BALANCE_TRANSACTION_LARGE_FONT_SIZE);
+        normalFont = primaryBalanceLabel.getFont().deriveFont(Font.BOLD, BALANCE_TRANSACTION_NORMAL_FONT_SIZE);
+        break;
+      case FEE_AMOUNT:
+        largeFont = primaryBalanceLabel.getFont().deriveFont(Font.BOLD, BALANCE_FEE_NORMAL_FONT_SIZE);
+        normalFont = primaryBalanceLabel.getFont().deriveFont(Font.BOLD, BALANCE_FEE_NORMAL_FONT_SIZE);
+        break;
+      default:
+        throw new IllegalStateException("Unknown style:" + style.name());
+    }
+
+    primaryBalanceLabel.setFont(largeFont);
+    primaryBalanceLabel.setForeground(Color.RED);
+    secondaryBalanceLabel.setFont(normalFont);
+    trailingSymbolLabel.setFont(largeFont);
+    exchangeLabel.setFont(normalFont);
 
     // Theme
     primaryBalanceLabel.setForeground(Themes.currentTheme.text());
@@ -228,6 +302,67 @@ public class Labels {
       exchangeLabel
     };
 
+  }
+
+  /**
+   * @return A new "Amount" label
+   */
+  public static JLabel newAmount() {
+    return newLabel(MessageKey.AMOUNT);
+  }
+
+  /**
+   * @return A new "Bitcoin currency symbol" based on the current configuration
+   */
+  public static JLabel newBitcoinCurrencySymbol() {
+
+    BitcoinSymbol symbol = BitcoinSymbol.of(
+      Configurations
+        .currentConfiguration
+        .getBitcoinConfiguration()
+        .getBitcoinSymbol()
+    );
+
+    JLabel label = new JLabel();
+    if (BitcoinSymbol.ICON.equals(symbol)) {
+      AwesomeDecorator.applyIcon(
+        AwesomeIcon.BITCOIN,
+        label,
+        true,
+        AwesomeDecorator.NORMAL_ICON_SIZE
+      );
+    } else {
+      label.setText(symbol.getSymbol());
+    }
+
+    return label;
+
+  }
+
+  /**
+   * @return A new "local currency symbol" based on the current configuration
+   */
+  public static JLabel newLocalCurrencySymbol() {
+    // TODO Link this to the I18N preferences
+    JLabel label = new JLabel("$");
+
+    Font font = label.getFont().deriveFont(Font.BOLD, (float) AwesomeDecorator.NORMAL_ICON_SIZE);
+    label.setFont(font);
+
+    return label;
+  }
+
+  /**
+   * @return A new "approximately" symbol
+   */
+  public static JLabel newApproximately() {
+
+    JLabel label = newLabel(MessageKey.APPROXIMATELY);
+
+    Font font = label.getFont().deriveFont(Font.BOLD, (float) AwesomeDecorator.NORMAL_ICON_SIZE);
+    label.setFont(font);
+
+    return label;
   }
 
   /**
@@ -247,6 +382,19 @@ public class Labels {
   }
 
   /**
+   * @return The current exchange name from the configuration
+   */
+  public static JLabel newCurrentExchangeName() {
+
+    String exchangeName = Configurations
+      .currentConfiguration
+      .getBitcoinConfiguration()
+      .getExchangeName();
+
+    return newLabel(MessageKey.EXCHANGE_RATE_PROVIDER, exchangeName);
+  }
+
+  /**
    * @return A new "You are about to send" message
    */
   public static JLabel newConfirmSendAmount() {
@@ -254,8 +402,60 @@ public class Labels {
     return newLabel(MessageKey.CONFIRM_SEND_MESSAGE);
   }
 
+  /**
+   * @return A new "recipient" message
+   */
+  public static JLabel newRecipient() {
+    return newLabel(MessageKey.RECIPIENT);
+  }
+
+  /**
+   * @return A new "recipient summary" label
+   */
+  public static JLabel newRecipientSummary(Recipient recipient) {
+
+    return newLabel(MessageKey.RECIPIENT_SUMMARY, recipient.getSummary());
+
+  }
+
+  /**
+   * @param transactionFee The transaction fee to represent
+   *
+   * @return A new "transaction fee" message
+   */
+  public static JLabel newTransactionFee(BigDecimal transactionFee) {
+    return newLabel(MessageKey.TRANSACTION_FEE);
+  }
+
+  /**
+   * @param developerFee The developer fee to represent
+   *
+   * @return A new "developer fee" message
+   */
+  public static JLabel newDeveloperFee(BigDecimal developerFee) {
+    return newLabel(MessageKey.MULTIBIT_FEE);
+  }
+
+
+  /**
+   * @return A new "seed size" message
+   */
   public static JLabel newSeedSize() {
     return newLabel(MessageKey.SEED_SIZE);
+  }
+
+  /**
+   * @return A new "transaction label" message for use with receiving addresses
+   */
+  public static JLabel newTransactionLabel() {
+    return newLabel(MessageKey.NOTES);
+  }
+
+  /**
+   * @return A new "notes" message
+   */
+  public static JLabel newNotes() {
+    return newLabel(MessageKey.NOTES);
   }
 
   /**

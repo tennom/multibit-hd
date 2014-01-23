@@ -34,10 +34,11 @@ public class ConfirmWalletSeedPhraseView extends AbstractWizardView<WelcomeWizar
 
   /**
    * @param wizard The wizard managing the states
+   * @param panelName   The panel name to filter events from components
    */
-  public ConfirmWalletSeedPhraseView(AbstractWizard<WelcomeWizardModel> wizard) {
+  public ConfirmWalletSeedPhraseView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), MessageKey.CONFIRM_WALLET_SEED_PHRASE_TITLE);
+    super(wizard.getWizardModel(), panelName, MessageKey.CONFIRM_WALLET_SEED_PHRASE_TITLE);
 
     PanelDecorator.addExitCancelNext(this, wizard);
 
@@ -50,9 +51,9 @@ public class ConfirmWalletSeedPhraseView extends AbstractWizardView<WelcomeWizar
     setPanelModel(enterSeedPhraseMaV.getModel().getValue());
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fill,insets 0", // Layout constrains
+      "fill,insets 0,hidemode 1", // Layout constraints
       "[]", // Column constraints
-      "[]10[]" // Row constraints
+      "[][]" // Row constraints
     ));
 
     panel.add(Panels.newConfirmSeedPhrase(), "wrap");

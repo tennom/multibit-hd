@@ -107,23 +107,35 @@ public class ViewEvents {
    * @param enabled      True if the button should be enabled
    */
   public static void fireWizardButtonEnabledEvent(String panelName, WizardButton wizardButton, boolean enabled) {
-    log.debug("Firing 'wizard enable button' event: {}", enabled);
+    log.debug("Firing 'wizard button enabled {}' event: {}", panelName, enabled);
     CoreServices.uiEventBus.post(new WizardButtonEnabledEvent(panelName, wizardButton, enabled));
 
   }
 
   /**
-   * <p>Broadcast a new "wizard panel model changed" event</p>
+   * <p>Broadcast a new "wizard component model changed" event</p>
    *
-   * @param panelModel The panel model
+   * @param panelName  The panel name to which this applies
+   * @param componentModel The component model
    */
-  public static void fireWizardPanelModelChangedEvent(Optional panelModel) {
-    log.debug("Firing 'wizard panel model changed' event");
-    CoreServices.uiEventBus.post(new WizardPanelModelChangedEvent(panelModel));
+  public static void fireWizardComponentModelChangedEvent(String panelName, Optional componentModel) {
+    log.debug("Firing 'wizard component model changed' event");
+    CoreServices.uiEventBus.post(new WizardComponentModelChangedEvent(panelName, componentModel));
   }
 
   /**
-   * <p>Broadcast a new "wizard model changed" event - normally consumed by "finishing" panels</p>
+   * <p>Broadcast a new "wizard panel model changed" event</p>
+   *
+   * @param panelName  The panel name to which this applies
+   * @param panelModel The panel model
+   */
+  public static void fireWizardPanelModelChangedEvent(String panelName, Optional panelModel) {
+    log.debug("Firing 'wizard panel model changed' event");
+    CoreServices.uiEventBus.post(new WizardPanelModelChangedEvent(panelName, panelModel));
+  }
+
+  /**
+   * <p>Broadcast a new "wizard model changed" event - normally consumed by "finishing" or "display" panels</p>
    *
    * @param panelName The panel name to restrict the update to a particular panel
    */

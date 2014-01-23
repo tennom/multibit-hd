@@ -317,7 +317,22 @@ public class Buttons {
   /**
    * @param action The click action
    *
-   * @return A new "Welcome" wizard button with icon
+   * @return A new "copy" button with icon
+   */
+  public static JButton newCopyButton(Action action) {
+
+    JButton button = newButton(action);
+
+    AwesomeDecorator.applyIcon(AwesomeIcon.COPY, button, true, AwesomeDecorator.NORMAL_ICON_SIZE);
+
+    return button;
+
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "select file" button with icon
    */
   public static JButton newSelectFileButton(Action action) {
 
@@ -331,7 +346,7 @@ public class Buttons {
   /**
    * @param action The click action
    *
-   * @return A new "Send Bitcoin" wizard button with icon
+   * @return A new "send Bitcoin" wizard button with icon
    */
   public static JButton newSendBitcoinWizardButton(Action action) {
 
@@ -366,7 +381,7 @@ public class Buttons {
 
     JButton button = newLargeButton(action, MessageKey.SHOW_WELCOME_WIZARD);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.WRENCH, button, true, AwesomeDecorator.LARGE_ICON_SIZE);
+    AwesomeDecorator.applyIcon(AwesomeIcon.WRENCH, button, true, JLabel.BOTTOM, AwesomeDecorator.LARGE_ICON_SIZE);
 
     return button;
   }

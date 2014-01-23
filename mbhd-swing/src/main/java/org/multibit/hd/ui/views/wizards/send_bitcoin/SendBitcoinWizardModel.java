@@ -1,10 +1,13 @@
 package org.multibit.hd.ui.views.wizards.send_bitcoin;
 
 import com.google.common.base.Optional;
-import org.joda.money.BigMoney;
-import org.joda.money.CurrencyUnit;
-import org.multibit.hd.ui.events.view.WizardPanelModelChangedEvent;
+import com.google.common.base.Strings;
+import org.multibit.hd.core.api.Recipient;
+import org.multibit.hd.ui.events.view.ViewEvents;
 import org.multibit.hd.ui.views.wizards.AbstractWizardModel;
+import org.multibit.hd.ui.views.wizards.WizardButton;
+
+import java.math.BigDecimal;
 
 import static org.multibit.hd.ui.views.wizards.send_bitcoin.SendBitcoinState.*;
 
@@ -21,15 +24,24 @@ import static org.multibit.hd.ui.views.wizards.send_bitcoin.SendBitcoinState.*;
 public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState> {
 
   /**
-   * The current state
+   * The "enter amount" panel model
    */
-  private SendBitcoinState state = ENTER_AMOUNT;
+  private SendBitcoinEnterAmountPanelModel enterAmountPanelModel;
 
   /**
-   * The Bitcoin amount
+   * The "confirm" panel model
    */
-  private BigMoney btcAmount = BigMoney.zero(CurrencyUnit.of("BTC"));
-  private String password;
+  private SendBitcoinConfirmPanelModel confirmPanelModel;
+
+  /**
+   * Default transaction fee
+   */
+  private BigDecimal transactionFee = new BigDecimal("0.0001");
+
+  /**
+   * Default developer fee
+   */
+  private BigDecimal developerFee = new BigDecimal("0.00005");
 
   /**
    * @param state The state object
@@ -48,12 +60,28 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
 
     switch (state) {
       case ENTER_AMOUNT:
-        btcAmount = (BigMoney) panelModel.get();
+
+        enterAmountPanelModel = (SendBitcoinEnterAmountPanelModel) panelModel.get();
+
+        // Determine any events
+        ViewEvents.fireWizardButtonEnabledEvent(
+          SendBitcoinState.ENTER_AMOUNT.name(),
+          WizardButton.NEXT,
+          isEnterAmountNextEnabled()
+        );
         break;
       case CONFIRM_AMOUNT:
-        password = (String) panelModel.get();
+
+        confirmPanelModel = (SendBitcoinConfirmPanelModel) panelModel.get();
+
+        // Determine any events
+        ViewEvents.fireWizardButtonEnabledEvent(
+          SendBitcoinState.CONFIRM_AMOUNT.name(),
+          WizardButton.NEXT,
+          isConfirmNextEnabled()
+        );
         break;
-      case PROGRESS:
+      case SEND_BITCOIN_REPORT:
         break;
     }
 
@@ -65,9 +93,11 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
     switch (state) {
       case ENTER_AMOUNT:
         state = CONFIRM_AMOUNT;
+        // Determine any events
+        ViewEvents.fireWizardModelChangedEvent(SendBitcoinState.CONFIRM_AMOUNT.name());
         break;
       case CONFIRM_AMOUNT:
-        state = PROGRESS;
+        state = SEND_BITCOIN_REPORT;
         break;
     }
 
@@ -92,22 +122,85 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
     return state.name();
   }
 
-  @Override
-  public void onWizardPanelModelChangedEvent(WizardPanelModelChangedEvent event) {
-    // Do nothing
+  /**
+   * @return The recipient the user identified
+   */
+  public Recipient getRecipient() {
+    return enterAmountPanelModel
+      .getEnterRecipientModel()
+      .getRecipient();
   }
 
   /**
-   * @return The Bitcoin amount to send
+   * @return The Bitcoin amount without symbolic multiplier
    */
-  public BigMoney getBtcAmount() {
-    return btcAmount;
+  public BigDecimal getRawBitcoinAmount() {
+    return enterAmountPanelModel
+      .getEnterAmountModel()
+      .getRawBitcoinAmount();
+  }
+
+  /**
+   * @return The local amount
+   */
+  public BigDecimal getLocalAmount() {
+    return enterAmountPanelModel
+      .getEnterAmountModel()
+      .getLocalAmount();
   }
 
   /**
    * @return The password the user entered
    */
   public String getPassword() {
-    return password;
+    return confirmPanelModel.getPasswordModel().getValue();
+  }
+
+  /**
+   * @return The notes the user entered
+   */
+  public String getNotes() {
+    return confirmPanelModel
+      .getNotes();
+  }
+
+  /**
+   * @return True if the "enter amount" panel next button should be enabled
+   */
+  private boolean isEnterAmountNextEnabled() {
+
+    boolean bitcoinAmountOK = !enterAmountPanelModel
+      .getEnterAmountModel()
+      .getRawBitcoinAmount()
+      .equals(BigDecimal.ZERO);
+
+    boolean recipientOK = enterAmountPanelModel
+      .getEnterRecipientModel()
+      .getRecipient() != null;
+
+    return bitcoinAmountOK && recipientOK;
+
+  }
+
+  /**
+   * @return True if the "confirm" panel next button should be enabled
+   */
+  private boolean isConfirmNextEnabled() {
+
+    return !Strings.isNullOrEmpty(getPassword());
+  }
+
+  /**
+   * @return The transaction fee (a.k.a "miner's fee") without symbolic multiplier
+   */
+  public BigDecimal getRawTransactionFee() {
+    return transactionFee;
+  }
+
+  /**
+   * @return The developer fee without symbolic multiplier
+   */
+  public BigDecimal getRawDeveloperFee() {
+    return developerFee;
   }
 }

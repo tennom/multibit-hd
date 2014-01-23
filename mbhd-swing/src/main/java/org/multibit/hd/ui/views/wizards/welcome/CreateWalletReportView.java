@@ -43,12 +43,13 @@ public class CreateWalletReportView extends AbstractWizardView<WelcomeWizardMode
 
   /**
    * @param wizard The wizard managing the states
+   * @param panelName   The panel name to filter events from components
    */
-  public CreateWalletReportView(AbstractWizard<WelcomeWizardModel> wizard) {
+  public CreateWalletReportView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), MessageKey.CREATE_WALLET_REPORT_TITLE);
+    super(wizard.getWizardModel(), panelName, MessageKey.CREATE_WALLET_REPORT_TITLE);
 
-    PanelDecorator.addExitCancelPreviousFinish(this, wizard);
+    PanelDecorator.addFinish(this, wizard);
 
   }
 
@@ -59,7 +60,7 @@ public class CreateWalletReportView extends AbstractWizardView<WelcomeWizardMode
     setPanelModel(model);
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fill,insets 0", // Layout constrains
+      "fill,insets 0", // Layout constraints
       "[][][]", // Column constraints
       "[]10[]10[]10[]" // Row constraints
     ));

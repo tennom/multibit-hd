@@ -30,6 +30,19 @@ public enum MessageKey {
   NEXT("next"),
   PREVIOUS("previous"),
 
+  // Field labels
+  RECIPIENT("Recipient"),
+  TRANSACTION_LABEL("receiveBitcoinPanel.labelLabel"),
+  NOTES("Notes"),
+  ENTER_PASSWORD("Enter password"),
+  CONFIRM_PASSWORD("Confirm password"),
+  AMOUNT("Amount"),
+  TRANSACTION_FEE("Transaction fee"),
+  MULTIBIT_FEE("MultiBit fee"),
+
+  // Placeholders
+  APPROXIMATELY("placeholder.approximately"),
+  PARANTHESES("placeholder.parantheses"),
 
   // Panels
 
@@ -48,6 +61,7 @@ public enum MessageKey {
   // Titles
   APPLICATION_TITLE("MultiBit HD"),
   SEND_BITCOIN_TITLE("sendBitcoinAction.text"),
+  RECEIVE_BITCOIN_TITLE("receiveBitcoinAction.text"),
   CONFIRM_SEND_TITLE("sendBitcoinConfirmView.title"),
   SEND_PROGRESS_TITLE("Send Progress"),
   EXIT_TITLE("Exit application ?"),
@@ -62,8 +76,7 @@ public enum MessageKey {
 
   // Labels
   CONFIRM_SEND_MESSAGE("sendBitcoinConfirmView.message"),
-  ENTER_PASSWORD("Enter password"),
-  CONFIRM_PASSWORD("Confirm password"),
+  EXCHANGE_RATE_PROVIDER("exchange.rate-provider"),
 
   // Tool buttons
   SHOW_WELCOME_WIZARD("Welcome wizard"),
@@ -73,6 +86,8 @@ public enum MessageKey {
   RELAY_STATUS("Relayed"),
   CONFIRMATION_STATUS("Confirmation count {0}"),
   VERIFICATION_STATUS("Verified"),
+  EXCHANGE_RATE_STATUS_OK("Exchange rate OK"),
+  EXCHANGE_RATE_STATUS_WARN("Exchange rate is out of date"),
 
   SEED_PHRASE_CREATED_STATUS("Seed phrase created"),
   WALLET_PASSWORD_CREATED_STATUS("Wallet password created"),
@@ -110,6 +125,8 @@ public enum MessageKey {
   WALLET_PASSWORD_NOTE_2("You can change it whenever you like from the Tools screen."),
   WALLET_PASSWORD_NOTE_3("You can always recover it using your seed phrase."),
 
+  RECIPIENT_SUMMARY("recipient-summary"),
+  AMOUNT_SUMMARY("amount-summary"),
 
   // End of enum
   CONTACTS("Contacts"), TRANSACTIONS("Transactions"), HISTORY("History"), PREFERENCES("Preferences"), TOOLS("Tools");

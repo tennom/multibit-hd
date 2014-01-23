@@ -42,7 +42,7 @@ public class PanelDecorator {
 
     // Standard wizard layout
     MigLayout layout = new MigLayout(
-      "fillx,insets 5", // Layout constrains
+      "fillx,insets 5", // Layout constraints
       "[][][][]", // Column constraints
       "[shrink]10[grow]10[]" // Row constraints
     );
@@ -445,4 +445,5 @@ public class PanelDecorator {
     view.setFinishButton(Buttons.newFinishButton(wizard.getFinishAction(view)));
     wizardPanel.add(view.getFinishButton(), "cell 3 2");
   }
+
 }

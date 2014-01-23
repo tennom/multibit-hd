@@ -1,5 +1,9 @@
 package org.multibit.hd.ui.views.components;
 
+import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.ui.i18n.BitcoinSymbol;
+import org.multibit.hd.ui.views.components.text_fields.FormattedDecimalField;
+import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
 import org.multibit.hd.ui.views.themes.Themes;
 
 import javax.swing.*;
@@ -35,12 +39,11 @@ public class TextBoxes {
   }
 
   /**
-   * TODO Convert this to a MaV
-   * @return A new "Recipient" auto-completer
+   * @return A new "enter label" text field
    */
-  public static JTextField newRecipient() {
+  public static JTextField newEnterLabel() {
 
-    JTextField textField = new JTextField(40);
+    JTextField textField = new JTextField(60);
     textField.setBackground(Themes.currentTheme.dataEntryBackground());
 
     return textField;
@@ -53,6 +56,71 @@ public class TextBoxes {
 
     JTextField textField = new JTextField(60);
     textField.setBackground(Themes.currentTheme.dataEntryBackground());
+
+    return textField;
+  }
+
+  /**
+   * @param bitcoinAddress The Bitcoin address to display
+   *
+   * @return A new "display Bitcoin address" text field
+   */
+  public static JTextField newDisplayBitcoinAddress(String bitcoinAddress) {
+
+    JTextField textField = new JTextField(40);
+    textField.setText(bitcoinAddress);
+
+    // Users should not be able to change the address
+    textField.setEditable(false);
+
+    return textField;
+  }
+
+  /**
+   * @param maximum The largest value than can be accepted (typically the wallet Bitcoin balance) - no financial calculations are performed on this value
+   *
+   * @return A new text field for Bitcoin amount entry
+   */
+  public static FormattedDecimalField newBitcoinAmount(double maximum) {
+
+    // Use the Bitcoin symbol multiplier to determine the decimal places
+    int decimalPlaces = BitcoinSymbol.current().decimalPlaces();
+
+    // The max edit length varies depending on the Bitcoin symbol (e.g. Satoshis have no decimal)
+    int maxEditLength = BitcoinSymbol.current().maxRepresentationLength();
+
+    FormattedDecimalField textField = new FormattedDecimalField(0, maximum, decimalPlaces, maxEditLength);
+
+    Font font = textField.getFont().deriveFont((float) AwesomeDecorator.NORMAL_ICON_SIZE);
+
+    textField.setFont(font);
+    textField.setColumns(15);
+
+    return textField;
+  }
+
+  /**
+   * @param maximum The largest value than can be accepted (typically the wallet local balance) - no financial calculations are performed on this value
+   *
+   * @return A new text field for currency amount entry
+   */
+  public static FormattedDecimalField newCurrencyAmount(double maximum) {
+
+    // Use the current configuration to provide the decimal places
+    int decimalPlaces = Configurations
+      .currentConfiguration
+      .getI18NConfiguration()
+      .getLocalDecimalPlaces();
+
+    // Allow an extra 6 digits for local currency
+    int maxEditLength = BitcoinSymbol.current().maxRepresentationLength() + 6;
+
+    FormattedDecimalField textField = new FormattedDecimalField(0, maximum, decimalPlaces, maxEditLength);
+
+    Font font = textField.getFont().deriveFont((float) AwesomeDecorator.NORMAL_ICON_SIZE);
+
+    textField.setFont(font);
+    textField.setColumns(15);
 
     return textField;
   }
@@ -81,7 +149,7 @@ public class TextBoxes {
   /**
    * @return A new "Notes" text area
    */
-  public static JTextArea newNotes() {
+  public static JTextArea newEnterNotes() {
 
     JTextArea textArea = new JTextArea(6, PASSWORD_LENGTH);
 
@@ -89,6 +157,15 @@ public class TextBoxes {
     DefaultStyledDocument doc = new DefaultStyledDocument();
     doc.setDocumentFilter(new DocumentMaxLengthFilter(SEED_PHRASE_LENGTH));
     textArea.setDocument(doc);
+
+    // Ensure TAB transfers focus
+    AbstractAction transferFocus = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        ((Component) e.getSource()).transferFocus();
+      }
+    };
+    textArea.getInputMap().put(KeyStroke.getKeyStroke("TAB"), "transferFocus");
+    textArea.getActionMap().put("transferFocus", transferFocus);
 
     // Apply the theme
     textArea.setBackground(Themes.currentTheme.dataEntryBackground());
@@ -117,8 +194,12 @@ public class TextBoxes {
    */
   public static JTextArea newEnterSeedPhrase() {
 
+    // Limit the length of the underlying document
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    doc.setDocumentFilter(new DocumentMaxLengthFilter(SEED_PHRASE_LENGTH));
+
     // Keep this in line with the PASSWORD_AREA constant
-    JTextArea textArea = new JTextArea(6, PASSWORD_LENGTH);
+    JTextArea textArea = new JTextArea(doc, "", 6, PASSWORD_LENGTH);
 
     // Ensure TAB transfers focus
     AbstractAction transferFocus = new AbstractAction() {
@@ -129,17 +210,12 @@ public class TextBoxes {
     textArea.getInputMap().put(KeyStroke.getKeyStroke("TAB"), "transferFocus");
     textArea.getActionMap().put("transferFocus", transferFocus);
 
-    // Limit the length of the underlying document
-    DefaultStyledDocument doc = new DefaultStyledDocument();
-    doc.setDocumentFilter(new DocumentMaxLengthFilter(SEED_PHRASE_LENGTH));
-    textArea.setDocument(doc);
-
     // Apply the theme
     textArea.setBackground(Themes.currentTheme.readOnlyBackground());
     textArea.setFont(new Font("Courier New", Font.PLAIN, 14));
 
     // Ensure we provide a suitable inner margin to allow letters to be clear
-    textArea.setMargin(new Insets(2,4,2,4));
+    textArea.setMargin(new Insets(2, 4, 2, 4));
 
     // Ensure line and word wrapping occur as required
     textArea.setLineWrap(true);
@@ -150,21 +226,9 @@ public class TextBoxes {
   }
 
   /**
-   * @return A new "Amount" text field for currency entry
-   */
-  public static JTextField newCurrency(String amount) {
-
-    JTextField textField = new JTextField(amount, 20);
-    textField.setBackground(Themes.currentTheme.dataEntryBackground());
-
-    return textField;
-  }
-
-  /**
    * @return The themed echo character for password fields
    */
   public static char getPasswordEchoChar() {
-
     return '\u2022';
   }
 }

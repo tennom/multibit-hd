@@ -12,7 +12,7 @@ import java.util.Map;
  * </ol>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class ExitWizard extends AbstractWizard<ExitWizardModel> {
 
@@ -23,7 +23,7 @@ public class ExitWizard extends AbstractWizard<ExitWizardModel> {
   @Override
   protected void populateWizardViewMap(Map<String, AbstractWizardView> wizardViewMap) {
 
-    wizardViewMap.put(ExitState.CONFIRM_EXIT.name(), new ExitView(this));
+    wizardViewMap.put(ExitState.CONFIRM_EXIT.name(), new ExitView(this, ExitState.CONFIRM_EXIT.name()));
 
   }
 

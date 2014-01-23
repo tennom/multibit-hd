@@ -44,7 +44,7 @@ import java.util.concurrent.TimeoutException;
  * @since 0.0.1
  *         
  */
-public class BitcoinNetworkService extends AbstractService implements ManagedService {
+public class BitcoinNetworkService extends AbstractService {
 
   public static final MainNetParams NETWORK_PARAMETERS = MainNetParams.get();
   public static final int MAXIMUM_NUMBER_OF_PEERS = 6;
@@ -68,7 +68,7 @@ public class BitcoinNetworkService extends AbstractService implements ManagedSer
     walletManager = WalletManager.INSTANCE;
 
     try {
-      String walletRoot = WalletManager.INSTANCE.getCurrentWalletDirectory().get().getAbsolutePath();
+      String walletRoot = WalletManager.INSTANCE.getCurrentWalletFilename().get().getParentFile().getAbsolutePath();
       String blockchainFilename = walletRoot + File.separator + InstallationManager.MBHD_PREFIX + InstallationManager.SPV_BLOCKCHAIN_SUFFIX;
       String checkpointsFilename = walletRoot + File.separator + InstallationManager.MBHD_PREFIX + InstallationManager.CHECKPOINTS_SUFFIX;
 

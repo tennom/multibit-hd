@@ -2,6 +2,7 @@ package org.multibit.hd.ui;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.xeiam.xchange.mtgox.v2.MtGoxExchange;
 import org.multibit.hd.core.api.MessageKey;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.events.ShutdownEvent;
@@ -13,7 +14,6 @@ import org.multibit.hd.ui.i18n.Languages;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.wizards.AbstractWizard;
 import org.multibit.hd.ui.views.wizards.Wizards;
-import org.multibit.hd.ui.views.wizards.welcome.WelcomeWizardState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +33,14 @@ import java.util.concurrent.TimeUnit;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class ComponentTestBed {
 
   private static final Logger log = LoggerFactory.getLogger(ComponentTestBed.class);
 
   private JFrame frame = null;
+  private JPanel contentPanel = null;
 
   /**
    * @param args Any command line arguments for the CoreServices
@@ -51,8 +52,14 @@ public class ComponentTestBed {
     // Start the core services
     CoreServices.main(args);
 
+    Configurations.currentConfiguration.getBitcoinConfiguration().setBitcoinSymbol("satoshi");
+
     // Register for events
     CoreServices.uiEventBus.register(this);
+
+    // Standard support services
+    CoreServices.newExchangeService(MtGoxExchange.class.getName()).start();
+    CoreServices.newBitcoinNetworkService().start();
 
   }
 
@@ -82,7 +89,9 @@ public class ComponentTestBed {
    * <p>Creates the panel under test</p>
    * <h3>Examples</h3>
    * <pre>
-   *   return Wizards.newWelcomeWizard().getWizardPanel();
+   * AbstractWizard wizard = Wizards.newExitingWelcomeWizard(WelcomeWizardState.WELCOME);
+   * wizard.show(WelcomeWizardState.WELCOME.name());
+   * return wizard.getWizardPanel();
    * </pre>
    *
    * @return The panel under test
@@ -90,8 +99,7 @@ public class ComponentTestBed {
   public JPanel createTestPanel() {
 
     // Choose a panel to test
-    AbstractWizard wizard = Wizards.newExitingWelcomeWizard(WelcomeWizardState.WELCOME);
-    wizard.show(WelcomeWizardState.WELCOME.name());
+    AbstractWizard wizard = Wizards.newReceiveBitcoinWizard();
     return wizard.getWizardPanel();
 
   }
@@ -171,23 +179,26 @@ public class ComponentTestBed {
     JButton toggleLocaleButton = new JButton(toggleLocaleAction);
     toggleLocaleButton.setText(Languages.safeText(MessageKey.SELECT_LANGUAGE));
 
-    // Set up the wrapping panel
-    JPanel contentPanel = Panels.newPanel();
-    contentPanel.setOpaque(true);
-
-    log.info("Adding test panel");
-    contentPanel.add(createTestPanel(), "wrap");
-    contentPanel.add(toggleLocaleButton,"center");
-
     // Set up the frame to use the minimum size
 
     log.info("Set up frame");
 
     if (frame == null) {
       frame = new JFrame("MultiBit HD Component Tester");
+    } else {
+      frame.remove(contentPanel);
     }
+
+    // Set up the wrapping panel
+    contentPanel = Panels.newPanel();
+    contentPanel.setOpaque(true);
+
+    log.info("Adding test panel");
+    contentPanel.add(createTestPanel(), "wrap");
+    contentPanel.add(toggleLocaleButton, "center");
+
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    frame.setContentPane(contentPanel);
+    frame.add(contentPanel);
     frame.pack();
     frame.setVisible(true);
 

@@ -30,10 +30,11 @@ public class CreateWalletPasswordView extends AbstractWizardView<WelcomeWizardMo
 
   /**
    * @param wizard The wizard managing the states
+   * @param panelName   The panel name to filter events from components
    */
-  public CreateWalletPasswordView(AbstractWizard<WelcomeWizardModel> wizard) {
+  public CreateWalletPasswordView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), MessageKey.CREATE_WALLET_PASSWORD_TITLE);
+    super(wizard.getWizardModel(), panelName, MessageKey.CREATE_WALLET_PASSWORD_TITLE);
 
     PanelDecorator.addExitCancelNext(this, wizard);
 
@@ -42,11 +43,11 @@ public class CreateWalletPasswordView extends AbstractWizardView<WelcomeWizardMo
   @Override
   public JPanel newDataPanel() {
 
-    confirmPasswordMaV = Components.newConfirmPassword(WelcomeWizardState.CREATE_WALLET_PASSWORD.name());
+    confirmPasswordMaV = Components.newConfirmPasswordMaV(WelcomeWizardState.CREATE_WALLET_PASSWORD.name());
     setPanelModel(confirmPasswordMaV.getModel());
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fill,insets 0", // Layout constrains
+      "fill,insets 0", // Layout constraints
       "[]", // Column constraints
       "[]10[]" // Row constraints
     ));
