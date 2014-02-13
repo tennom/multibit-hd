@@ -1,5 +1,6 @@
 package org.multibit.hd.core.services;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.xeiam.xchange.Exchange;
@@ -10,6 +11,9 @@ import org.multibit.hd.core.logging.LoggingFactory;
 import org.multibit.hd.core.seed_phrase.Bip39SeedPhraseGenerator;
 import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
 import org.multibit.hd.core.utils.OSUtils;
+import org.multibit.hd.hardware.core.HardwareWalletService;
+import org.multibit.hd.hardware.core.wallets.HardwareWallet;
+import org.multibit.hd.hardware.trezor.UsbTrezorHardwareWallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +45,16 @@ public class CoreServices {
   static {
     applicationEventService = new ApplicationEventService();
     uiEventBus.register(applicationEventService);
+
+    HardwareWallet usbTrezorHardwareWallet = HardwareWalletService.newUsbInstance(
+      UsbTrezorHardwareWallet.class.getName(),
+      Optional.<Integer>absent(),
+      Optional.<Integer>absent(),
+      Optional.<String>absent()
+    );
+
+    usbTrezorHardwareWallet.initialise();
+
   }
 
   private static final Map<WalletId, ContactService> contactServiceMap = Maps.newHashMap();
