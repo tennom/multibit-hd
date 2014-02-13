@@ -5,14 +5,17 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.BitcoinNetworkSummary;
+import org.multibit.hd.core.dto.RAGStatus;
 import org.multibit.hd.core.events.BitcoinNetworkChangedEvent;
 import org.multibit.hd.core.services.CoreServices;
+import org.multibit.hd.hardware.core.HardwareWalletService;
 import org.multibit.hd.hardware.core.events.HardwareWalletProtocolEvent;
 import org.multibit.hd.hardware.core.events.HardwareWalletSystemEvent;
-import org.multibit.hd.hardware.core.messages.SystemMessageType;
 import org.multibit.hd.ui.events.controller.ChangeLocaleEvent;
+import org.multibit.hd.ui.events.controller.ControllerEvents;
 import org.multibit.hd.ui.events.view.ViewEvents;
 import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.ui.models.Models;
 import org.multibit.hd.ui.views.components.Panels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +37,13 @@ public class MainController {
 
   private static final Logger log = LoggerFactory.getLogger(MainController.class);
 
+  // TODO Remove this
+  private int walletCount = 0;
+
   public MainController() {
 
     CoreServices.uiEventBus.register(this);
+    HardwareWalletService.hardwareEventBus.register(this);
 
   }
 
@@ -121,14 +128,36 @@ public class MainController {
 
     log.info("Received hardware event: {} {}", event.getMessageType().name(), event.getMessage());
 
+    ControllerEvents.fireAddAlertEvent(Models.newAlertModel(event.getMessageType().name(), RAGStatus.AMBER));
+
   }
 
   @Subscribe
   public void onHardwareWalletSystemEvent(HardwareWalletSystemEvent event) {
 
-    if (SystemMessageType.DEVICE_DISCONNECTED.equals(event.getMessageType())) {
-      log.error("Device is not connected");
-      System.exit(-1);
+    switch (event.getMessageType()) {
+      case DEVICE_CONNECTED:
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel(event.getMessageType().name(), RAGStatus.GREEN));
+        ViewEvents.fireHardwareWalletAddedEvent(Models.newHardwareWalletModel("My Trezor "+walletCount));
+        walletCount++;
+        break;
+      case DEVICE_DISCONNECTED:
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel(event.getMessageType().name(), RAGStatus.AMBER));
+        walletCount--;
+        ViewEvents.fireHardwareWalletRemovedEvent("My Trezor "+walletCount);
+        break;
+      case DEVICE_EOF:
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel(event.getMessageType().name(), RAGStatus.RED));
+        walletCount--;
+        ViewEvents.fireHardwareWalletRemovedEvent("My Trezor "+walletCount);
+        break;
+      case DEVICE_FAILURE:
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel(event.getMessageType().name(), RAGStatus.RED));
+        walletCount--;
+        ViewEvents.fireHardwareWalletRemovedEvent("My Trezor "+walletCount);
+        break;
+      default:
+        throw new IllegalStateException("Unknown hardware wallet system state: "+event.getMessageType().name());
     }
 
   }

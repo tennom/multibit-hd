@@ -8,7 +8,7 @@ import org.multibit.hd.hardware.core.messages.SystemMessageType;
 import org.multibit.hd.ui.MultiBitUI;
 import org.multibit.hd.ui.events.controller.ControllerEvents;
 import org.multibit.hd.ui.i18n.MessageKey;
-import org.multibit.hd.ui.models.AlertModel;
+import org.multibit.hd.ui.models.Models;
 import org.multibit.hd.ui.views.components.Buttons;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.screens.AbstractScreenView;
@@ -69,7 +69,7 @@ public class ToolsPanelView extends AbstractScreenView<ToolsPanelModel> {
       @Override
       public void actionPerformed(ActionEvent e) {
 
-        ControllerEvents.fireAddAlertEvent(new AlertModel("Red alert", RAGStatus.RED));
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel("Red alert", RAGStatus.RED));
       }
     };
 
@@ -77,7 +77,7 @@ public class ToolsPanelView extends AbstractScreenView<ToolsPanelModel> {
       @Override
       public void actionPerformed(ActionEvent e) {
 
-        ControllerEvents.fireAddAlertEvent(new AlertModel("Amber alert", RAGStatus.AMBER));
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel("Amber alert", RAGStatus.AMBER));
       }
     };
 
@@ -85,7 +85,7 @@ public class ToolsPanelView extends AbstractScreenView<ToolsPanelModel> {
       @Override
       public void actionPerformed(ActionEvent e) {
 
-        ControllerEvents.fireAddAlertEvent(new AlertModel("Green alert", RAGStatus.GREEN));
+        ControllerEvents.fireAddAlertEvent(Models.newAlertModel("Green alert", RAGStatus.GREEN));
       }
     };
 

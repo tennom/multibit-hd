@@ -52,4 +52,14 @@ public class Models {
   public static AlertModel newAlertModel(String message, RAGStatus status) {
     return new AlertModel(message, status);
   }
+
+  /**
+   * @param name The wallet name (e.g. "My Trezor")
+   *
+   * @return A new alert model
+   */
+  public static HardwareWalletModel newHardwareWalletModel(String name) {
+    return new HardwareWalletModel(name);
+  }
+
 }

@@ -5,6 +5,7 @@ import org.joda.money.BigMoney;
 import org.multibit.hd.core.dto.RAGStatus;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.models.AlertModel;
+import org.multibit.hd.ui.models.HardwareWalletModel;
 import org.multibit.hd.ui.views.screens.Screen;
 import org.multibit.hd.ui.views.wizards.WizardButton;
 import org.slf4j.Logger;
@@ -34,9 +35,30 @@ public class ViewEvents {
   }
 
   /**
+   * <p>Broadcast a new "hardware wallet added" event</p>
+   *
+   * @param hardwareWalletModel The hardware wallet model
+   */
+  public static void fireHardwareWalletAddedEvent(HardwareWalletModel hardwareWalletModel) {
+    log.debug("Firing 'hardware wallet added' event: '{}'",hardwareWalletModel.getName());
+    CoreServices.uiEventBus.post(new HardwareWalletAddedEvent(hardwareWalletModel));
+  }
+
+  /**
+   * <p>Broadcast a new "hardware wallet removed" event</p>
+   *
+   * @param name The wallet name
+   */
+  public static void fireHardwareWalletRemovedEvent(String name) {
+    log.debug("Firing 'hardware wallet removed' event: '{}'",name);
+    CoreServices.uiEventBus.post(new HardwareWalletRemovedEvent(name));
+  }
+
+  /**
    * <p>Broadcast a new "locale changed" event</p>
    */
   public static void fireLocaleChangedEvent() {
+    log.trace("Firing 'locale changed' event");
     CoreServices.uiEventBus.post(new LocaleChangedEvent());
   }
 

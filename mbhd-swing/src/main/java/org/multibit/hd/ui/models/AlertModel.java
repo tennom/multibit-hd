@@ -20,7 +20,7 @@ public class AlertModel implements Model<String> {
 
   private int remaining = 0;
 
-  public AlertModel(String localisedMessage, RAGStatus severity) {
+  AlertModel(String localisedMessage, RAGStatus severity) {
     this.severity = severity;
     this.localisedMessage = localisedMessage;
   }

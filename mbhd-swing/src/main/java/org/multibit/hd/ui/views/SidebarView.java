@@ -1,8 +1,11 @@
 package org.multibit.hd.ui.views;
 
+import com.google.common.eventbus.Subscribe;
 import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.events.controller.ControllerEvents;
+import org.multibit.hd.ui.events.view.HardwareWalletAddedEvent;
+import org.multibit.hd.ui.events.view.HardwareWalletRemovedEvent;
 import org.multibit.hd.ui.i18n.MessageKey;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.components.SidebarNodeInfo;
@@ -17,6 +20,7 @@ import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 
@@ -27,11 +31,12 @@ import java.awt.*;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class SidebarView {
 
   private final JPanel contentPanel;
+  private JTree sidebarTree;
 
   public SidebarView() {
 
@@ -60,13 +65,60 @@ public class SidebarView {
   }
 
   /**
+   * <p>Handles the representation of the balance based on the current configuration</p>
+   *
+   * @param event The balance change event
+   */
+  @Subscribe
+  public synchronized void onAddHardwareWalletEvent(HardwareWalletAddedEvent event) {
+
+    // Create the new hardware wallet node
+    DefaultMutableTreeNode hardwareWallet = TreeNodes.newSidebarTreeNode(event.getHardwareWalletModel().getName(), Screen.WALLET);
+    hardwareWallet.add(TreeNodes.newSidebarTreeNode(MessageKey.CONTACTS, Screen.CONTACTS));
+    hardwareWallet.add(TreeNodes.newSidebarTreeNode(MessageKey.TRANSACTIONS, Screen.TRANSACTIONS));
+
+    DefaultTreeModel model = (DefaultTreeModel) sidebarTree.getModel();
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+
+    // Insert as the next one after the soft wallet
+    model.insertNodeInto(hardwareWallet, root, 1);
+
+  }
+
+  /**
+   * <p>Handles the representation of the balance based on the current configuration</p>
+   *
+   * @param event The balance change event
+   */
+  @Subscribe
+  public synchronized void onRemoveHardwareWalletEvent(HardwareWalletRemovedEvent event) {
+
+    DefaultTreeModel model = (DefaultTreeModel) sidebarTree.getModel();
+
+    DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+
+    for (int i = 0; i < root.getChildCount(); i++) {
+
+      // Get the child node
+      DefaultMutableTreeNode child = (DefaultMutableTreeNode) model.getChild(root, i);
+      SidebarNodeInfo userObject = (SidebarNodeInfo) child.getUserObject();
+
+      // Compare names and remove if equal
+      if (event.getName().equals(userObject.getText())) {
+        model.removeNodeFromParent(child);
+      }
+    }
+
+  }
+
+  /**
    * @return The sidebar content
    */
   private JScrollPane createSidebarContent() {
 
     JScrollPane sidebarPane = new JScrollPane();
 
-    JTree sidebarTree = new JTree(createSidebarTreeNodes());
+    sidebarTree = new JTree(createSidebarTreeNodes());
     sidebarTree.setShowsRootHandles(false);
     sidebarTree.setRootVisible(false);
 
