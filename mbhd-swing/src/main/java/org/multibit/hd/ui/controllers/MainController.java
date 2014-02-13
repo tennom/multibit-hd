@@ -7,6 +7,9 @@ import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.BitcoinNetworkSummary;
 import org.multibit.hd.core.events.BitcoinNetworkChangedEvent;
 import org.multibit.hd.core.services.CoreServices;
+import org.multibit.hd.hardware.core.events.HardwareWalletProtocolEvent;
+import org.multibit.hd.hardware.core.events.HardwareWalletSystemEvent;
+import org.multibit.hd.hardware.core.messages.SystemMessageType;
 import org.multibit.hd.ui.events.controller.ChangeLocaleEvent;
 import org.multibit.hd.ui.events.view.ViewEvents;
 import org.multibit.hd.ui.i18n.Languages;
@@ -111,6 +114,23 @@ public class MainController {
 
     // Ensure everyone is aware of the update
     ViewEvents.fireSystemStatusChangedEvent(localisedMessage, summary.getSeverity());
+  }
+
+  @Subscribe
+  public void onHardwareWalletProtocolEvent(HardwareWalletProtocolEvent event) {
+
+    log.info("Received hardware event: {} {}", event.getMessageType().name(), event.getMessage());
+
+  }
+
+  @Subscribe
+  public void onHardwareWalletSystemEvent(HardwareWalletSystemEvent event) {
+
+    if (SystemMessageType.DEVICE_DISCONNECTED.equals(event.getMessageType())) {
+      log.error("Device is not connected");
+      System.exit(-1);
+    }
+
   }
 
 }
