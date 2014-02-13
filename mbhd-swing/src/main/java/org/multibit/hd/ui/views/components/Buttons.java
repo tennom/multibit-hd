@@ -1,8 +1,8 @@
 package org.multibit.hd.ui.views.components;
 
 import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.i18n.MessageKey;
 import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.ui.i18n.MessageKey;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.themes.NimbusDecorator;
@@ -512,16 +512,24 @@ public class Buttons {
   }
 
   /**
-   * @param action The click action
+   * <p>Temporary generic tool button</p>
    *
-   * @return A new "Alert" button with icon
+   * @param action The click action
+   * @param text   The text
+   *
+   * @return A new "generic tool" button with icon
    */
-  public static JButton newAddAlertButton(Action action) {
+  public static JButton newGenericToolButton(Action action, String text) {
 
-    JButton button = newLargeButton(action, MessageKey.SHOW_ALERT);
+    JButton button = newButton(action);
+
+    button.setText(text);
+
+    button.setVerticalTextPosition(SwingConstants.BOTTOM);
+    button.setHorizontalTextPosition(SwingConstants.CENTER);
 
     AwesomeDecorator.applyIcon(
-      AwesomeIcon.EXCLAMATION_CIRCLE,
+      AwesomeIcon.WRENCH,
       button,
       true,
       JLabel.BOTTOM,
