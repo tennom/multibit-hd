@@ -1,6 +1,7 @@
 package org.multibit.hd.ui.views.components;
 
-import org.multibit.hd.ui.views.components.renderers.RAGStatusRenderer;
+import org.multibit.hd.ui.views.components.renderers.*;
+import org.multibit.hd.ui.views.components.tables.PaymentTableModel;
 
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -21,8 +22,23 @@ public class Renderers {
   private Renderers() {
   }
 
-  public static DefaultTableCellRenderer newRAGStatusRenderer() {
-    return new RAGStatusRenderer();
+  public static DefaultTableCellRenderer newRAGStatusRenderer(PaymentTableModel paymentTableModel) {
+    return new RAGStatusTableCellRenderer(paymentTableModel);
+  }
+
+  public static DefaultTableCellRenderer newTrailingJustifiedDateRenderer() {
+    return new TrailingJustifiedDateTableCellRenderer();
+  }
+
+  public static DefaultTableCellRenderer newTrailingJustifiedNumericRenderer() {
+    return new AmountBTCTableCellRenderer();
+  }
+  public static DefaultTableCellRenderer newTrailingJustifiedFiatRenderer() {
+    return new AmountFiatTableCellRenderer();
+  }
+
+  public static DefaultTableCellRenderer newPaymentTypeRenderer() {
+     return new PaymentTypeTableCellRenderer();
   }
 
 }

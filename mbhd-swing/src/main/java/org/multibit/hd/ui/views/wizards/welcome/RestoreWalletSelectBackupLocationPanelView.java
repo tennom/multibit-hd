@@ -3,9 +3,11 @@ package org.multibit.hd.ui.views.wizards.welcome;
 import com.google.common.base.Optional;
 import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.ui.events.view.ViewEvents;
-import org.multibit.hd.ui.i18n.MessageKey;
-import org.multibit.hd.ui.views.components.*;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
+import org.multibit.hd.ui.languages.MessageKey;
+import org.multibit.hd.ui.views.components.Components;
+import org.multibit.hd.ui.views.components.Labels;
+import org.multibit.hd.ui.views.components.ModelAndView;
+import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.select_file.SelectFileModel;
 import org.multibit.hd.ui.views.components.select_file.SelectFileView;
@@ -35,9 +37,7 @@ public class RestoreWalletSelectBackupLocationPanelView extends AbstractWizardPa
    */
   public RestoreWalletSelectBackupLocationPanelView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.RESTORE_WALLET_SELECT_BACKUP_TITLE);
-
-    PanelDecorator.addExitCancelPreviousNext(this, wizard);
+    super(wizard, panelName, MessageKey.RESTORE_WALLET_SELECT_BACKUP_TITLE, AwesomeIcon.FOLDER_OPEN);
 
   }
 
@@ -54,21 +54,25 @@ public class RestoreWalletSelectBackupLocationPanelView extends AbstractWizardPa
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.GLOBE);
-
-    panel.setLayout(new MigLayout(
-            "fillx,insets 0", // Layout constraints
-            "[][]", // Column constraints
-            "[][][]" // Row constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migXYLayout(),
+      "[][]", // Column constraints
+      "[][][]" // Row constraints
     ));
 
-    panel.add(Panels.newRestoreFromBackup(), "span 2,grow,wrap");
-    panel.add(Labels.newSelectFolder());
-    panel.add(selectFileMaV.getView().newComponentPanel(), "grow,wrap");
+    contentPanel.add(Panels.newRestoreFromBackup(), "span 2,grow,wrap");
+    contentPanel.add(Labels.newSelectFolder());
+    contentPanel.add(selectFileMaV.getView().newComponentPanel(), "grow,wrap");
 
-    return panel;
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<WelcomeWizardModel> wizard) {
+
+    PanelDecorator.addExitCancelPreviousNext(this, wizard);
+
   }
 
   @Override
@@ -77,6 +81,18 @@ public class RestoreWalletSelectBackupLocationPanelView extends AbstractWizardPa
     // Enable the "next" button is enabled (so that the user can click next without a backup)
 
     ViewEvents.fireWizardButtonEnabledEvent(getPanelName(), WizardButton.NEXT, true);
+
+  }
+
+  @Override
+  public void afterShow() {
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        selectFileMaV.getView().requestInitialFocus();
+      }
+    });
 
   }
 

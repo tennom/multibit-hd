@@ -1,206 +1,83 @@
 package org.multibit.hd.core.services;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.multibit.hd.core.dto.Contact;
-import org.multibit.hd.core.dto.StarStyle;
-import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.exceptions.ContactsLoadException;
 import org.multibit.hd.core.exceptions.ContactsSaveException;
-import org.multibit.hd.core.managers.InstallationManager;
-import org.multibit.hd.core.managers.WalletManager;
-import org.multibit.hd.core.store.ContactsProtobufSerializer;
-import org.multibit.hd.core.utils.FileUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
- * <p>Service to provide the following to application:</p>
- * <ul>
- * <li>CRUD operations on Contacts</li>
- * </ul>
- *
- * @since 0.0.1
+ *  <p>Interface to provide the following to Contact API:<br>
+ *  <ul>
+ *  <li>Common methods for contact data access</li>
+ *  </ul>
+ *  </p>
  *  
  */
-public class ContactService {
-
-  public final static String CONTACTS_DIRECTORY_NAME = "contacts";
-  public final static String CONTACTS_DATABASE_NAME = "contacts.db";
-
+public interface ContactService {
   /**
-   * The in-memory cache of contacts for the current wallet
+   * The name of the directory (within the wallets directory) that contains the contacts database
    */
-  private final Set<Contact> contacts = Sets.newHashSet();
+  String CONTACTS_DIRECTORY_NAME = "contacts";
 
   /**
-   * The location of the backing store for the contacts
+   * The name of the contacts database
    */
-  private File backingStoreFile;
-  /**
-   * The serializer for the backing store
-   */
-  private ContactsProtobufSerializer protobufSerializer;
+  String CONTACTS_DATABASE_NAME = "contacts.db";
 
   /**
-   * <p>Create a ContactService for a Wallet with the given walletId</p>
+   * @param name The mandatory name of the contact
    *
-   * <p>Reduced visibility constructor to prevent accidental instance creation outside of CoreServices.</p>
+   * @return A new contact
    */
-  ContactService(WalletId walletId) {
-
-    // Work out where to store the contacts for this wallet id.
-    File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
-    String walletRoot = WalletManager.createWalletRoot(walletId);
-    File walletDirectory = WalletManager.getWalletDirectory(applicationDataDirectory.getAbsolutePath(), walletRoot);
-    File contactsDirectory = new File(walletDirectory.getAbsolutePath() + File.separator + CONTACTS_DIRECTORY_NAME);
-    FileUtils.createDirectoryIfNecessary(contactsDirectory);
-
-    this.backingStoreFile = new File(contactsDirectory.getAbsolutePath() + File.separator + CONTACTS_DATABASE_NAME);
-
-    initialise();
-  }
+  Contact newContact(String name);
 
   /**
-   * <p>Create a ContactService with the specified File as the backing store. (This exists primarily for testing where you just run things in a temporary directory)</p>
-   * <p>Reduced visibility constructor to prevent accidental instance creation outside of CoreServices.</p>
+   * @return All the contacts
    */
-  ContactService(File backingStoreFile) {
-
-    this.backingStoreFile = backingStoreFile;
-
-    initialise();
-  }
-
-  private void initialise() {
-
-    protobufSerializer = new ContactsProtobufSerializer();
-
-    // Load the contact data from the backing store if it exists
-    if (backingStoreFile.exists()) {
-      load();
-    }
-
-  }
+  List<Contact> allContacts();
 
   /**
-   * <p>Create a new contact and add it to the internal cache</p>
+   * @param query The text to match across all fields (name, tags, notes etc)
    *
-   * @param name A name (normally first name and last name)
+   * @return Any matching contacts
+   */
+  List<Contact> filterContactsByContent(String query);
+
+  /**
+   * @param selectedContacts The selected contacts to add to the store
+   */
+  void addAll(Collection<Contact> selectedContacts);
+
+  /**
+   * <p>Load the contacts from the store</p>
    *
-   * @return A new contact with a fresh ID
+   * @throws ContactsLoadException If something goes wrong
    */
-  public Contact newContact(String name) {
-
-    Contact contact = new Contact(UUID.randomUUID(), name);
-
-    contacts.add(contact);
-
-    return contact;
-
-  }
+  void loadContacts() throws ContactsLoadException;
 
   /**
-   * @param page            The page number (1-based)
-   * @param contactsPerPage The 1-based number of contacts per page
+   * @param selectedContacts The selected contacts to remove from the store
+   */
+  void removeAll(Collection<Contact> selectedContacts);
+
+  /**
+   * <p>Update the store with the edited contacts</p>
    *
-   * @return A list of all Contacts for the given page
+   * @param editedContacts The edited contacts
    */
-  public List<Contact> allContacts(int page, int contactsPerPage) {
-    return Lists.newArrayList(contacts);
-  }
+  void updateContacts(Collection<Contact> editedContacts);
 
   /**
-   * @param page            The page number (1-based)
-   * @param contactsPerPage The number of contacts per page
-   * @param query           The text fragment to match (case-insensitive, anywhere in the name)
+   * <p>Write the contacts to the store</p>
    *
-   * @return A filtered set of Contacts for the given page and query
+   * @throws ContactsSaveException If something goes wrong
    */
-  public List<Contact> filterContactsByName(int page, int contactsPerPage, String query) {
-
-    String lowerQuery = query.toLowerCase();
-
-    List<Contact> filteredContacts = Lists.newArrayList();
-
-    for (Contact contact : contacts) {
-      if (contact.getName().toLowerCase().contains(lowerQuery)) {
-        filteredContacts.add(contact);
-      }
-    }
-
-    return filteredContacts;
-  }
+  void writeContacts() throws ContactsSaveException;
 
   /**
-   * <p>Clear the contact data</p>
+   * <p>Create some demonstration contacts for testing purposes</p>
    */
-  public void clear() {
-    contacts.clear();
-  }
-
-  /**
-   * <p>Populate the internal cache of Contacts from the backing store</p>
-   */
-  public void load() throws ContactsLoadException {
-    try (FileInputStream fis = new FileInputStream(backingStoreFile)) {
-      Set<Contact> loadedContacts = protobufSerializer.readContacts(fis);
-      contacts.clear();
-      contacts.addAll(loadedContacts);
-    } catch (IOException e) {
-      throw new ContactsLoadException("Could not load contacts db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");
-    }
-  }
-
-  /**
-   * <p>Save the contact data to the backing store</p>
-   */
-  public void store() throws ContactsSaveException {
-    try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
-      protobufSerializer.writeContacts(contacts, fos);
-    } catch (IOException e) {
-      throw new ContactsSaveException("Could not save contacts db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");
-    }
-  }
-
-  /**
-   * <p>Add some demo contacts to the contacts list</p>
-   * <p>Used by ComponentTestBed and tests</p>
-   */
-  public void addDemoContacts() {
-
-    Contact contact1 = newContact("Alice Capital");
-    contact1.setEmail("g.rowe@froot.co.uk");
-    contact1.getTags().add("VIP");
-    contact1.getTags().add("Family");
-    contact1.setStarStyle(StarStyle.EMPTY);
-
-    Contact contact2 = newContact("Bob Capital");
-    contact2.setEmail("bob.capital@example.org");
-    contact2.getTags().add("VIP");
-    contact2.getTags().add("Merchandise");
-    contact2.setStarStyle(StarStyle.FILL_1);
-
-    Contact contact3 = newContact("Charles Capital");
-    contact3.setEmail("charles.capital@example.org");
-    contact3.setStarStyle(StarStyle.FILL_2);
-
-    // No email for Derek
-    Contact contact4 = newContact("Derek Capital");
-    contact4.getTags().add("Family");
-    contact4.setStarStyle(StarStyle.FILL_3);
-
-    Contact contact5 = newContact("alice Lower");
-    contact5.setEmail("alice.lower@example.org");
-
-    Contact contact6 = newContact("alicia Lower");
-    contact6.setEmail("alicia.lower@example.org");
-
-  }
+  void addDemoContacts();
 }

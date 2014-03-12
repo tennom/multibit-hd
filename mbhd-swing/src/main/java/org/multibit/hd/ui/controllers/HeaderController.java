@@ -7,9 +7,11 @@ import com.google.common.eventbus.Subscribe;
 import org.joda.money.BigMoney;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.events.ExchangeRateChangedEvent;
+import org.multibit.hd.core.events.SlowTransactionSeenEvent;
 import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.core.utils.Satoshis;
+import org.multibit.hd.ui.audio.Sounds;
 import org.multibit.hd.ui.events.controller.AddAlertEvent;
 import org.multibit.hd.ui.events.controller.RemoveAlertEvent;
 import org.multibit.hd.ui.events.view.ViewEvents;
@@ -39,15 +41,14 @@ public class HeaderController {
   }
 
   /**
-   * <p>Called when the balance changes</p>
+   * <p>Called when the exchange rate changes</p>
    *
    * @param event The exchange rate change event
    */
   @Subscribe
-  public void onBalanceChanged(ExchangeRateChangedEvent event) {
+  public void onExchangeRateChangedEvent(ExchangeRateChangedEvent event) {
 
     // Build the exchange string
-    // TODO Link to a real balance and remove BigDecimal
     BigInteger satoshis;
 
     Optional<WalletData> currentWalletData = WalletManager.INSTANCE.getCurrentWalletData();
@@ -58,11 +59,38 @@ public class HeaderController {
       // Unknown at this time
       satoshis = BigInteger.ZERO;
     }
-    BigMoney localBalance = Satoshis.toLocalAmount(satoshis, event.getRate());
+    BigMoney localBalance;
 
+    if (event.getRate() != null) {
+      localBalance = Satoshis.toLocalAmount(satoshis, event.getRate());
+    } else {
+      localBalance = null;
+    }
     // Post the event
-    ViewEvents.fireBalanceChangedEvent(satoshis, localBalance, event.getExchangeName());
+    ViewEvents.fireBalanceChangedEvent(
+      satoshis,
+      localBalance,
+      event.getRateProvider()
+    );
 
+  }
+
+  /**
+   * <p>Called when there are payments seen that may change the balance</p>
+   *
+   * @param event The slow transaction seen event
+   */
+  @Subscribe
+  public void onSlowTransactionSeenEvent(SlowTransactionSeenEvent event) {
+
+    Optional<ExchangeRateChangedEvent> exchangeRateChangedEventOptional = CoreServices.getApplicationEventService().getLatestExchangeRateChangedEvent();
+
+    if (exchangeRateChangedEventOptional.isPresent()) {
+      onExchangeRateChangedEvent(exchangeRateChangedEventOptional.get());
+    } else {
+      // No exchange rate available but fire an event anyhow to force a balance change event
+      onExchangeRateChangedEvent(new ExchangeRateChangedEvent(null, Optional.<String>absent(), null));
+    }
   }
 
   /**
@@ -75,6 +103,14 @@ public class HeaderController {
 
     // Add this to the list
     alertModels.add(event.getAlertModel());
+
+    // Play a beep on the first alert
+    switch (event.getAlertModel().getSeverity()) {
+      case RED:
+      case AMBER:
+        Sounds.playBeep();
+        break;
+    }
 
     // Adjust the models to reflect the new M of N values
     updateRemaining();
@@ -116,15 +152,15 @@ public class HeaderController {
    */
   private void updateRemaining() {
 
-    Preconditions.checkNotNull(alertModels,"'alertModels' must be present");
+    Preconditions.checkNotNull(alertModels, "'alertModels' must be present");
 
     // Update the "remaining" based on the position in the list
     for (int i = 0; i < alertModels.size(); i++) {
       AlertModel alertModel = alertModels.get(i);
 
-      Preconditions.checkNotNull(alertModel,"'alertModel' must be present");
+      Preconditions.checkNotNull(alertModel, "'alertModel' must be present");
 
-      alertModel.setRemaining(alertModels.size()-1);
+      alertModel.setRemaining(alertModels.size() - 1);
     }
 
   }

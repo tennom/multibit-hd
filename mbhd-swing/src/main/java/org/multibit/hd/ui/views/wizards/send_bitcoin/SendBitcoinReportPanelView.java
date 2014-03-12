@@ -7,13 +7,11 @@ import org.multibit.hd.core.dto.CoreMessageKey;
 import org.multibit.hd.core.events.BitcoinSentEvent;
 import org.multibit.hd.core.events.TransactionCreationEvent;
 import org.multibit.hd.core.events.TransactionSeenEvent;
-import org.multibit.hd.core.services.CoreServices;
-import org.multibit.hd.ui.i18n.Languages;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.Labels;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
-import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.Panels;
+import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.themes.Themes;
 import org.multibit.hd.ui.views.wizards.AbstractWizard;
@@ -49,11 +47,7 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
    */
   public SendBitcoinReportPanelView(AbstractWizard<SendBitcoinWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.SEND_PROGRESS_TITLE);
-
-    PanelDecorator.addFinish(this, wizard);
-
-    CoreServices.uiEventBus.register(this);
+    super(wizard, panelName, MessageKey.SEND_PROGRESS_TITLE, AwesomeIcon.CLOUD_UPLOAD);
 
   }
 
@@ -62,7 +56,7 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
 
     // Configure the panel model
     SendBitcoinReportPanelModel panelModel = new SendBitcoinReportPanelModel(
-            getPanelName()
+      getPanelName()
     );
     setPanelModel(panelModel);
 
@@ -72,18 +66,16 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.CLOUD_UPLOAD);
-
-    panel.setLayout(new MigLayout(
-            "fill,insets 0", // Layout constraints
-            "[][][]", // Column constraints
-            "[]10[]10[]" // Row constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migXYLayout(),
+      "[][][]", // Column constraints
+      "[]10[]10[]" // Row constraints
     ));
 
     // Apply the theme
-    panel.setBackground(Themes.currentTheme.detailPanelBackground());
+    contentPanel.setBackground(Themes.currentTheme.detailPanelBackground());
 
     transactionConstructionStatusSummary = Labels.newStatusLabel(Optional.<MessageKey>absent(), null, Optional.<Boolean>absent());
     transactionConstructionStatusDetail = Labels.newStatusLabel(Optional.<MessageKey>absent(), null, Optional.<Boolean>absent());
@@ -92,13 +84,31 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
     transactionBroadcastStatusDetail = Labels.newStatusLabel(Optional.<MessageKey>absent(), null, Optional.<Boolean>absent());
     transactionConfirmationStatus = Labels.newStatusLabel(Optional.<MessageKey>absent(), null, Optional.<Boolean>absent());
 
-    panel.add(transactionConstructionStatusSummary, "wrap");
-    panel.add(transactionConstructionStatusDetail, "wrap");
-    panel.add(transactionBroadcastStatusSummary, "wrap");
-    panel.add(transactionBroadcastStatusDetail, "wrap");
-    panel.add(transactionConfirmationStatus, "wrap");
+    contentPanel.add(transactionConstructionStatusSummary, "wrap");
+    contentPanel.add(transactionConstructionStatusDetail, "wrap");
+    contentPanel.add(transactionBroadcastStatusSummary, "wrap");
+    contentPanel.add(transactionBroadcastStatusDetail, "wrap");
+    contentPanel.add(transactionConfirmationStatus, "wrap");
 
-    return panel;
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<SendBitcoinWizardModel> wizard) {
+
+    PanelDecorator.addFinish(this, wizard);
+
+  }
+
+  @Override
+  public void afterShow() {
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        getFinishButton().requestFocusInWindow();
+      }
+    });
+
   }
 
   @Override
@@ -118,7 +128,7 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
       Labels.decorateStatusLabel(transactionConstructionStatusSummary, Optional.of(Boolean.TRUE));
     } else {
       String detailMessage = Languages.safeText(transactionCreationEvent.getTransactionCreationFailureReasonKey(),
-              (Object[]) transactionCreationEvent.getTransactionCreationFailureReasonData());
+        (Object[]) transactionCreationEvent.getTransactionCreationFailureReasonData());
       transactionConstructionStatusSummary.setText(Languages.safeText(CoreMessageKey.TRANSACTION_CREATION_FAILED));
       transactionConstructionStatusDetail.setText(detailMessage);
       Labels.decorateStatusLabel(transactionConstructionStatusSummary, Optional.of(Boolean.FALSE));
@@ -153,5 +163,4 @@ public class SendBitcoinReportPanelView extends AbstractWizardPanelView<SendBitc
       }
     }
   }
-
 }

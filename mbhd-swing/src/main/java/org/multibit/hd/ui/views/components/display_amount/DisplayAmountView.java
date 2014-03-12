@@ -1,22 +1,22 @@
 package org.multibit.hd.ui.views.components.display_amount;
 
+import com.google.common.base.Preconditions;
 import net.miginfocom.swing.MigLayout;
-import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.i18n.MessageKey;
 import org.multibit.hd.core.config.BitcoinConfiguration;
-import org.multibit.hd.core.config.Configurations;
-import org.multibit.hd.core.config.I18NConfiguration;
-import org.multibit.hd.core.utils.BitcoinSymbol;
-import org.multibit.hd.core.utils.CurrencyUtils;
-import org.multibit.hd.ui.i18n.Formats;
-import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.core.config.Configuration;
+import org.multibit.hd.core.config.LanguageConfiguration;
+import org.multibit.hd.ui.languages.Formats;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.AbstractComponentView;
+import org.multibit.hd.ui.views.components.LabelDecorator;
 import org.multibit.hd.ui.views.components.Labels;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
-import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 
 import javax.swing.*;
+import java.math.BigInteger;
+import java.util.Locale;
 
 /**
  * <p>View to provide the following to UI:</p>
@@ -31,6 +31,7 @@ import javax.swing.*;
 public class DisplayAmountView extends AbstractComponentView<DisplayAmountModel> {
 
   // View components
+  private JLabel leadingSymbolLabel;
   private JLabel primaryBalanceLabel;
   private JLabel secondaryBalanceLabel;
   private JLabel trailingSymbolLabel;
@@ -53,178 +54,174 @@ public class DisplayAmountView extends AbstractComponentView<DisplayAmountModel>
 
     // Create the balance panel - forcing a LTR layout to ensure correct placement of labels
     panel = Panels.newPanel(new MigLayout(
-      "fill,ltr,insets 0", // Layout
-      "[][][][][]", // Columns
-      "[]10[shrink]" // Rows
+      "fillx,insets 0,hidemode 2,ltr", // Layout requires LTR
+      "[]0[]5[]5[]5[]5[]", // Columns require careful padding for leading/trailing symbols
+      "[]" // Rows
     ));
 
     // Create the balance labels (normal size)
     JLabel[] balanceLabels = Labels.newBalanceLabels(getModel().get().getStyle());
-    primaryBalanceLabel = balanceLabels[0];
-    secondaryBalanceLabel = balanceLabels[1];
-    trailingSymbolLabel = balanceLabels[2];
-    exchangeLabel = balanceLabels[3];
+    leadingSymbolLabel = balanceLabels[0];
+    primaryBalanceLabel = balanceLabels[1];
+    secondaryBalanceLabel = balanceLabels[2];
+    trailingSymbolLabel = balanceLabels[3];
+    exchangeLabel = balanceLabels[4];
 
     // Determine how to add them back into the panel
     if (Languages.isLeftToRight()) {
-      panel.add(primaryBalanceLabel, "left,shrink,baseline");
-      panel.add(secondaryBalanceLabel, "left,shrink,gap 0");
-      panel.add(trailingSymbolLabel, "left,shrink,gap 0");
-      panel.add(exchangeLabel, "left,shrink,gap 0");
-      panel.add(new JLabel(), "push,wrap"); // Provides a flexible column
+      panel.add(leadingSymbolLabel, "shrink,baseline");
+      panel.add(primaryBalanceLabel, "shrink,baseline");
+      panel.add(secondaryBalanceLabel, "shrink");
+      panel.add(trailingSymbolLabel, "shrink");
+      panel.add(exchangeLabel, "shrink");
+      panel.add(Labels.newBlankLabel(), "push,wrap"); // Provides a flexible column
     } else {
-
-      panel.add(exchangeLabel, "right,shrink,gap 0");
-      panel.add(primaryBalanceLabel, "right,shrink,baseline");
-      panel.add(secondaryBalanceLabel, "right,shrink,gap 0");
-      panel.add(trailingSymbolLabel, "right,shrink,gap 0");
-      panel.add(new JLabel(), "push,wrap"); // Provides a flexible column
+      panel.add(Labels.newBlankLabel(), "push"); // Provides a flexible column
+      panel.add(exchangeLabel, "shrink");
+      panel.add(leadingSymbolLabel, "shrink");
+      panel.add(primaryBalanceLabel, "shrink,baseline");
+      panel.add(secondaryBalanceLabel, "shrink");
+      panel.add(trailingSymbolLabel, "shrink,wrap");
     }
 
     return panel;
 
   }
 
-  /**
-   * Updates the view to reflect the current Bitcoin and local amounts
-   */
-  public void updateView() {
+  @Override
+  public void requestInitialFocus() {
+    // No focus required
+  }
 
-    BitcoinConfiguration bitcoinConfiguration = Configurations.currentConfiguration.getBitcoinConfiguration();
-    I18NConfiguration i18nConfiguration = Configurations.currentConfiguration.getI18NConfiguration();
+  /**
+   * <p>Updates the view to reflect the current Bitcoin and local amounts</p>
+   *
+   * @param configuration The Configuration to use
+   */
+  public void updateView(Configuration configuration) {
+
+    Preconditions.checkNotNull(configuration, "'configuration' must be present");
+
+    LanguageConfiguration languageConfiguration = configuration.getLanguageConfiguration();
+    BitcoinConfiguration bitcoinConfiguration = configuration.getBitcoinConfiguration();
+    BigInteger satoshis = getModel().get().getSatoshis();
 
     // Display using the symbolic amount
-    String[] bitcoinDisplay = Formats.formatSatoshisAsSymbolic(getModel().get().getSatoshis());
+    String[] bitcoinDisplay = Formats.formatSatoshisAsSymbolic(satoshis, languageConfiguration, bitcoinConfiguration);
 
-    BitcoinSymbol symbol = BitcoinSymbol.of(bitcoinConfiguration.getBitcoinSymbol());
-
-    if (i18nConfiguration.isCurrencySymbolLeading()) {
-      handleLeadingSymbol(bitcoinDisplay, symbol);
+    if (bitcoinConfiguration.isCurrencySymbolLeading()) {
+      handleLeadingSymbol(bitcoinConfiguration);
+      leadingSymbolLabel.setVisible(true);
+      // Require a hard space to ensure leading/trailing symbols look right
+      primaryBalanceLabel.setText("\u00a0" + bitcoinDisplay[0]);
     } else {
-      handleTrailingSymbol(symbol);
+      handleTrailingSymbol(bitcoinConfiguration);
+      leadingSymbolLabel.setVisible(false);
+      primaryBalanceLabel.setText(bitcoinDisplay[0]);
     }
 
-    primaryBalanceLabel.setText(bitcoinDisplay[0]);
     secondaryBalanceLabel.setText(bitcoinDisplay[1]);
 
-    String localSymbol = CurrencyUtils.currentSymbol();
+    Locale locale = languageConfiguration.getLocale();
+    String localSymbol = bitcoinConfiguration.getLocalCurrencySymbol();
 
     if (getModel().get().isLocalAmountVisible()) {
-      String localDisplay = Formats.formatLocalAmount(getModel().get().getLocalAmount());
-      exchangeLabel.setText(
-        Languages.safeText(
-          MessageKey.EXCHANGE_FIAT_RATE,
-          "~ "+localSymbol,
-          localDisplay
-        ));
+      String localDisplay = Formats.formatLocalAmount(getModel().get().getLocalAmount(), locale, bitcoinConfiguration);
+      // Exchange label text is complex
+      handleExchangeLabelText(bitcoinConfiguration, localSymbol, localDisplay);
       exchangeLabel.setVisible(true);
     } else {
       exchangeLabel.setVisible(false);
     }
   }
 
-
   /**
    * <p>Place currency symbol before the number</p>
-   *
-   * @param symbol The symbol to use
    */
-  private void handleLeadingSymbol(String[] balance, BitcoinSymbol symbol) {
+  private void handleLeadingSymbol(BitcoinConfiguration bitcoinConfiguration) {
 
-    // Placement is primary, secondary, trailing, exchange (reading LTR)
+    // Add the symbol to the leading position
+    LabelDecorator.applyBitcoinSymbolLabel(leadingSymbolLabel, bitcoinConfiguration, "");
 
-    if (BitcoinSymbol.ICON.equals(symbol)) {
-
-      // Icon leads primary balance but decorator will automatically swap which is undesired
-      if (Languages.isLeftToRight()) {
-        AwesomeDecorator.applyIcon(AwesomeIcon.BITCOIN, primaryBalanceLabel, true, getLargeFontSize());
-      } else {
-        AwesomeDecorator.applyIcon(AwesomeIcon.BITCOIN, primaryBalanceLabel, false, getLargeFontSize());
-      }
-      AwesomeDecorator.removeIcon(trailingSymbolLabel);
-      trailingSymbolLabel.setText("");
-
-    } else {
-
-      // Symbol leads primary balance
-      balance[0] = symbol.getSymbol() + " " + balance[0];
-      AwesomeDecorator.removeIcon(primaryBalanceLabel);
-      AwesomeDecorator.removeIcon(trailingSymbolLabel);
-
-    }
+    // Remove it from the trailing position
+    AwesomeDecorator.removeIcon(trailingSymbolLabel);
+    trailingSymbolLabel.setText("");
 
   }
+
 
   /**
    * <p>Place currency symbol after the number</p>
-   *
-   * @param symbol The symbol to use
    */
-  private void handleTrailingSymbol(BitcoinSymbol symbol) {
+  private void handleTrailingSymbol(BitcoinConfiguration bitcoinConfiguration) {
 
-    if (BitcoinSymbol.ICON.equals(symbol)) {
+    // Add the symbol to the trailing position (no text)
+    LabelDecorator.applyBitcoinSymbolLabel(trailingSymbolLabel, bitcoinConfiguration, "");
 
-      // Icon trails secondary balance
-      AwesomeDecorator.applyIcon(AwesomeIcon.BITCOIN, trailingSymbolLabel, true, getNormalFontSize());
-      AwesomeDecorator.removeIcon(primaryBalanceLabel);
-      trailingSymbolLabel.setText("");
+    // Remove it from the leading position
+    AwesomeDecorator.removeIcon(leadingSymbolLabel);
+    leadingSymbolLabel.setText("");
 
+  }
+
+  /**
+   * <p>Populates the exchange label text according to the configured symbols and available providers</p>
+   * <p>Note the use of non-breaking spaces (\u00a0) to ensure the entire number is correctly represented</p>
+   *
+   * @param bitcoinConfiguration The Bitcoin configuration
+   * @param localSymbol          The local symbol (e.g. "$")
+   * @param localDisplay         The local display (e.g. "1,234.567")
+   */
+  private void handleExchangeLabelText(BitcoinConfiguration bitcoinConfiguration, String localSymbol, String localDisplay) {
+
+    if (getModel().get().getRateProvider().isPresent()) {
+
+      // Have a provider
+      if (bitcoinConfiguration.isCurrencySymbolLeading()) {
+        // Use leading format
+        exchangeLabel.setText(
+          Languages.safeText(
+            MessageKey.EXCHANGE_FIAT_RATE_WITH_PROVIDER,
+            "~\u00a0" + localSymbol + "\u00a0",
+            localDisplay,
+            getModel().get().getRateProvider().get()
+          ));
+
+      } else {
+
+        // Use trailing format
+        exchangeLabel.setText(
+          Languages.safeText(
+            MessageKey.EXCHANGE_FIAT_RATE_WITH_PROVIDER,
+            "~\u00a0",
+            localDisplay + "\u00a0" + localSymbol + "\u00a0",
+            getModel().get().getRateProvider().get()
+          ));
+
+      }
     } else {
 
-      // Symbol trails secondary balance
-      trailingSymbolLabel.setText(symbol.getSymbol());
-      AwesomeDecorator.removeIcon(primaryBalanceLabel);
-      AwesomeDecorator.removeIcon(trailingSymbolLabel);
+      // No provider
+      if (bitcoinConfiguration.isCurrencySymbolLeading()) {
+        // Use leading format
+        exchangeLabel.setText(
+          Languages.safeText(
+            MessageKey.EXCHANGE_FIAT_RATE,
+            "~\u00a0" + localSymbol + "\u00a0",
+            localDisplay
+          ));
+
+      } else {
+        // Use trailing format
+        exchangeLabel.setText(
+          Languages.safeText(
+            MessageKey.EXCHANGE_FIAT_RATE,
+            "~\u00a0",
+            localDisplay + "\u00a0" + localSymbol
+          ));
+      }
 
     }
-
   }
 
-  /**
-   * @return The size of the normal font for the given style
-   */
-  private int getNormalFontSize() {
-
-    final int size;
-    switch (getModel().get().getStyle()) {
-      case HEADER:
-        size = (int) MultiBitUI.BALANCE_HEADER_NORMAL_FONT_SIZE;
-        break;
-      case TRANSACTION_DETAIL_AMOUNT:
-        size = (int) MultiBitUI.BALANCE_TRANSACTION_NORMAL_FONT_SIZE;
-        break;
-      case FEE_AMOUNT:
-        size = (int) MultiBitUI.BALANCE_FEE_NORMAL_FONT_SIZE;
-        break;
-      default:
-        throw new IllegalStateException("Style: " + getModel().get().getStyle().name() + " is unknown");
-    }
-
-    return size;
-
-  }
-
-  /**
-   * @return The size of the large font for the given style
-   */
-  private int getLargeFontSize() {
-
-    final int size;
-    switch (getModel().get().getStyle()) {
-      case HEADER:
-        size = (int) MultiBitUI.BALANCE_HEADER_LARGE_FONT_SIZE;
-        break;
-      case TRANSACTION_DETAIL_AMOUNT:
-        size = (int) MultiBitUI.BALANCE_TRANSACTION_LARGE_FONT_SIZE;
-        break;
-      case FEE_AMOUNT:
-        size = (int) MultiBitUI.BALANCE_FEE_LARGE_FONT_SIZE;
-        break;
-      default:
-        throw new IllegalStateException("Style: " + getModel().get().getStyle().name() + " is unknown");
-    }
-
-    return size;
-
-  }
 }

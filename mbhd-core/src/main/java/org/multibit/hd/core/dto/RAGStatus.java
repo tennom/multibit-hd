@@ -15,6 +15,12 @@ public enum RAGStatus {
    * Red means stop, critical, user must take action to fix
    */
   RED,
+
+  /**
+    * Pink means pending, no action required but keep an eye on things
+    */
+   PINK,
+
   /**
    * Amber means warning, interested users may want to explore further
    */
@@ -22,7 +28,14 @@ public enum RAGStatus {
   /**
    * Green means go, no action required all is well
    */
-  GREEN
+  GREEN,
+
+
+  /**
+   * Empty indicates there is no applicable RAG status
+   */
+  EMPTY
+
 
   // End of enum
   ;

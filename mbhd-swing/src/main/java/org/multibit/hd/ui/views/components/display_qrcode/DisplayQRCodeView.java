@@ -1,8 +1,8 @@
 package org.multibit.hd.ui.views.components.display_qrcode;
 
 import com.google.common.base.Optional;
-import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.core.utils.OSUtils;
+import org.multibit.hd.ui.MultiBitUI;
 import org.multibit.hd.ui.utils.ClipboardUtils;
 import org.multibit.hd.ui.utils.QRCodes;
 import org.multibit.hd.ui.views.components.AbstractComponentView;
@@ -28,6 +28,7 @@ public class DisplayQRCodeView extends AbstractComponentView<DisplayQRCodeModel>
 
   private Optional<BufferedImage> qrCodeImage;
 
+  private JButton panelCloseButton;
 
   /**
    * @param model The model backing this view
@@ -40,13 +41,11 @@ public class DisplayQRCodeView extends AbstractComponentView<DisplayQRCodeModel>
   @Override
   public JPanel newComponentPanel() {
 
-    panel = Panels.newPanel(new MigLayout(
-      "insets 0", // Layout
-      "[][]", // Columns
-      "[][]" // Rows
-    ));
+    panel = Panels.newRoundedPanel();
 
-    qrCodeImage = QRCodes.generateQRCode(getModel().get().getValue(), 2);
+    qrCodeImage = QRCodes.generateQRCode(getModel().get().getValue(), 3);
+
+    panelCloseButton = Buttons.newPanelCloseButton(getClosePopoverAction());
 
     // Add to the panel
     // Bug in JDK 1.7 on Mac prevents clipboard image copy
@@ -54,14 +53,24 @@ public class DisplayQRCodeView extends AbstractComponentView<DisplayQRCodeModel>
     if (!OSUtils.isMac()) {
       panel.add(Buttons.newCopyButton(getCopyClipboardAction()), "align left,push");
     }
-    panel.add(Buttons.newPanelCloseButton(getClosePopoverAction()), "align right,shrink,wrap");
+
+    panel.add(panelCloseButton, "align right,shrink,wrap");
     panel.add(Labels.newImageLabel(qrCodeImage), "span 2,grow,push,wrap");
 
-    // Panel needs to be this size to allow for largest Bitcoin URI
-    panel.setSize(350, 350);
+    JLabel labelLabel = Labels.newBlankLabel();
+    labelLabel.setText(getModel().get().getLabel());
+    panel.add(labelLabel, "align center,push,wrap");
+
+    // Set minimum size
+    panel.setSize(MultiBitUI.POPOVER_MAX_WIDTH, MultiBitUI.POPOVER_MAX_HEIGHT);
 
     return panel;
 
+  }
+
+  @Override
+  public void requestInitialFocus() {
+    panelCloseButton.requestFocusInWindow();
   }
 
   /**

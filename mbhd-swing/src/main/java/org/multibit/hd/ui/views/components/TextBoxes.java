@@ -3,14 +3,17 @@ package org.multibit.hd.ui.views.components;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.utils.BitcoinSymbol;
 import org.multibit.hd.ui.MultiBitUI;
+import org.multibit.hd.ui.languages.Languages;
 import org.multibit.hd.ui.views.components.borders.TextBubbleBorder;
 import org.multibit.hd.ui.views.components.text_fields.FormattedDecimalField;
 import org.multibit.hd.ui.views.themes.Themes;
 
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 
 /**
  * <p>Utility to provide the following to UI:</p>
@@ -40,6 +43,8 @@ public class TextBoxes {
     textField.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
     textField.setBackground(Themes.currentTheme.dataEntryBackground());
 
+    textField.setOpaque(false);
+
     return textField;
   }
 
@@ -56,6 +61,8 @@ public class TextBoxes {
     // Set the theme
     textField.setBorder(new TextBubbleBorder(Themes.currentTheme.readOnlyBorder()));
     textField.setBackground(Themes.currentTheme.readOnlyBackground());
+
+    textField.setOpaque(false);
 
     return textField;
   }
@@ -114,6 +121,50 @@ public class TextBoxes {
   }
 
   /**
+   * @param readOnly True if the field should be read only (i.e. in multi-edit mode)
+   *
+   * @return A new "enter name" text field
+   */
+  public static JTextField newEnterName(boolean readOnly) {
+
+    return readOnly ? newReadOnlyTextField(40) : newTextField(40);
+
+  }
+
+  /**
+   * @param readOnly True if the field should be read only (i.e. in multi-edit mode)
+   *
+   * @return A new "enter email address" text field
+   */
+  public static JTextField newEnterEmailAddress(boolean readOnly) {
+
+    return readOnly ? newReadOnlyTextField(40) : newTextField(40);
+
+  }
+
+  /**
+   * @param readOnly True if the field should be read only (i.e. in multi-edit mode)
+   *
+   * @return A new "enter Bitcoin address" text field
+   */
+  public static JTextField newEnterBitcoinAddress(boolean readOnly) {
+
+    return readOnly ? newReadOnlyTextField(40) : newTextField(40);
+
+  }
+
+  /**
+   * @param readOnly True if the field should be read only (i.e. in multi-edit mode)
+   *
+   * @return A new "enter extended public key" text field
+   */
+  public static JTextField newEnterExtendedPublicKey(boolean readOnly) {
+
+    return readOnly ? newReadOnlyTextField(40) : newTextField(40);
+
+  }
+
+  /**
    * @param bitcoinAddress The Bitcoin address to display
    *
    * @return A new "display Bitcoin address" text field
@@ -150,6 +201,8 @@ public class TextBoxes {
     textField.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
     textField.setBackground(Themes.currentTheme.dataEntryBackground());
 
+    textField.setOpaque(false);
+
     return textField;
   }
 
@@ -163,7 +216,7 @@ public class TextBoxes {
     // Use the current configuration to provide the decimal places
     int decimalPlaces = Configurations
       .currentConfiguration
-      .getI18NConfiguration()
+      .getBitcoinConfiguration()
       .getLocalDecimalPlaces();
 
     // Allow an extra 6 digits for local currency
@@ -179,6 +232,8 @@ public class TextBoxes {
     // Set the theme
     textField.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
     textField.setBackground(Themes.currentTheme.dataEntryBackground());
+
+    textField.setOpaque(false);
 
     return textField;
   }
@@ -202,20 +257,34 @@ public class TextBoxes {
     passwordField.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
     passwordField.setBackground(Themes.currentTheme.dataEntryBackground());
 
+    passwordField.setOpaque(false);
+
     return passwordField;
   }
 
   /**
-   * @return A new "Notes" text area
+   * @return A new "notes" text area
    */
   public static JTextArea newEnterNotes() {
+    return TextBoxes.newEnterNotes(MultiBitUI.PASSWORD_LENGTH);
+  }
 
-    JTextArea textArea = new JTextArea(6, MultiBitUI.PASSWORD_LENGTH);
+
+  /**
+   * @return A new "Notes" text area
+   */
+  public static JTextArea newEnterNotes(int width) {
+
+    JTextArea textArea = new JTextArea(6, width);
 
     // Limit the length of the underlying document
     DefaultStyledDocument doc = new DefaultStyledDocument();
     doc.setDocumentFilter(new DocumentMaxLengthFilter(MultiBitUI.SEED_PHRASE_LENGTH));
     textArea.setDocument(doc);
+
+    // Ensure line wrapping occurs correctly
+    textArea.setLineWrap(true);
+    textArea.setWrapStyleWord(true);
 
     // Ensure TAB transfers focus
     AbstractAction transferFocus = new AbstractAction() {
@@ -229,6 +298,34 @@ public class TextBoxes {
     // Set the theme
     textArea.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
     textArea.setBackground(Themes.currentTheme.dataEntryBackground());
+
+    textArea.setOpaque(false);
+
+    return textArea;
+  }
+
+  /**
+   * <p>Create a new truncated localised comma separated list label (e.g. "a, b, c ..."</p>
+   *
+   * @param contents  The contents to join into a localised comma-separated list
+   * @param maxLength The maximum length of the resulting string (including ellipsis)
+   *
+   * @return A new truncated list text area
+   */
+  public static JTextArea newTruncatedList(Collection<String> contents, int maxLength) {
+
+    JTextArea textArea = new JTextArea(Languages.truncatedList(contents, maxLength));
+
+    textArea.setBorder(BorderFactory.createEmptyBorder());
+    textArea.setEditable(false);
+
+    // Ensure the background is transparent
+    textArea.setBackground(new Color(0, 0, 0, 0));
+    textArea.setForeground(Themes.currentTheme.text());
+    textArea.setOpaque(false);
+
+    textArea.setLineWrap(true);
+    textArea.setWrapStyleWord(true);
 
     return textArea;
   }
@@ -274,9 +371,6 @@ public class TextBoxes {
     textArea.getInputMap().put(KeyStroke.getKeyStroke("TAB"), "transferFocus");
     textArea.getActionMap().put("transferFocus", transferFocus);
 
-//    // Ensure we provide a suitable inner margin to allow letters to be clear
-//    textArea.setMargin(new Insets(6, 4, 6, 4));
-//
     // Ensure line and word wrapping occur as required
     textArea.setLineWrap(true);
     textArea.setWrapStyleWord(true);
@@ -287,6 +381,20 @@ public class TextBoxes {
     textArea.setFont(new Font("Courier New", Font.PLAIN, 14));
 
     return textArea;
+
+  }
+
+  /**
+   * @param listener A document listener to detect changes
+   *
+   * @return A new "enter API key" text field
+   */
+  public static JTextField newEnterApiKey(DocumentListener listener) {
+
+    JTextField textField = newTextField(40);
+    textField.getDocument().addDocumentListener(listener);
+
+    return textField;
 
   }
 

@@ -3,17 +3,17 @@ package org.multibit.hd.ui.views.wizards;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.google.common.eventbus.Subscribe;
 import org.multibit.hd.core.events.CoreEvents;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.events.view.LocaleChangedEvent;
+import org.multibit.hd.ui.events.view.ViewEvents;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.layouts.WizardCardLayout;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.Map;
 
 /**
@@ -28,65 +28,52 @@ import java.util.Map;
  */
 public abstract class AbstractWizard<M extends WizardModel> {
 
-  private final WizardCardLayout cardLayout;
-  private final JPanel wizardPanel;
+  /**
+   * The wizard screen holder card layout to which each wizard screen panel is added
+   */
+  private final WizardCardLayout cardLayout = new WizardCardLayout(0, 0);
+  /**
+   * Keeps all of the wizard screen panels in a card layout
+   */
+  private final JPanel wizardScreenHolder = Panels.newPanel(cardLayout);
+
   private final M wizardModel;
+  protected Optional wizardParameter = Optional.absent();
 
   private final boolean exiting;
   private Map<String, AbstractWizardPanelView> wizardViewMap = Maps.newHashMap();
 
   /**
-   * @param wizardModel The overall wizard data model containing the aggregate information of all components in the wizard
-   * @param isExiting   True if the exit button should trigger an application shutdown
+   * @param wizardModel     The overall wizard data model containing the aggregate information of all components in the wizard
+   * @param isExiting       True if the exit button should trigger an application shutdown
+   * @param wizardParameter An optional parameter that can be referenced during construction
    */
-  protected AbstractWizard(M wizardModel, boolean isExiting) {
+  protected AbstractWizard(M wizardModel, boolean isExiting, Optional wizardParameter) {
 
     Preconditions.checkNotNull(wizardModel, "'model' must be present");
 
     this.wizardModel = wizardModel;
     this.exiting = isExiting;
+    this.wizardParameter = wizardParameter;
 
     CoreServices.uiEventBus.register(this);
 
-    cardLayout = new WizardCardLayout(0, 0);
-    wizardPanel = Panels.newPanel(cardLayout);
-
-    // Use current locale for initial creation
-    onLocaleChangedEvent(new LocaleChangedEvent());
-
-    wizardPanel.setMinimumSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
-    wizardPanel.setPreferredSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
-
-    wizardPanel.setSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
-
-    // Show the panel specified by the initial state
-    show(wizardModel.getPanelName());
-
-  }
-
-  @Subscribe
-  public void onLocaleChangedEvent(LocaleChangedEvent event) {
-
-    Preconditions.checkNotNull(event, "'event' must be present");
-
-    // Clear out any existing components
-    wizardPanel.removeAll();
-
-    // Clear out any existing views
-    wizardViewMap.clear();
-
-    // Re-populate based on the new locale (could involve an LTR or RTL transition)
-    populateWizardViewMap(wizardViewMap);
-
-    // Bind the views into the wizard panel, and share their panel names
-    for (Map.Entry<String, AbstractWizardPanelView> entry : wizardViewMap.entrySet()) {
-
-      // Add it to the panel
-      wizardPanel.add(entry.getValue().getWizardPanel(), entry.getKey());
-
+    // Bind the ESC key to a Cancel/Exit event
+    wizardScreenHolder.getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "quit");
+    if (isExiting) {
+      wizardScreenHolder.getActionMap().put("quit", getExitAction());
+    } else {
+      wizardScreenHolder.getActionMap().put("quit", getCancelAction());
     }
 
-    // Once all the views are initialised allow events to occur
+    // TODO Bind the ENTER key to a Next/Finish/Apply event to speed up data entry through keyboard
+    //wizardPanel.getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "next");
+    //wizardPanel.getActionMap().put("next", getNextAction(null));
+
+    // Populate based on the current locale
+    populateWizardViewMap(wizardViewMap);
+
+    // Once all the views are created allow events to occur
     for (Map.Entry<String, AbstractWizardPanelView> entry : wizardViewMap.entrySet()) {
 
       // Ensure the panel is in the correct starting state
@@ -94,8 +81,73 @@ public abstract class AbstractWizard<M extends WizardModel> {
 
     }
 
-    // Invalidate for new layout
-    Panels.invalidate(wizardPanel);
+    // Ensure the wizard panel has size
+    wizardScreenHolder.setMinimumSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
+    wizardScreenHolder.setPreferredSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
+    wizardScreenHolder.setSize(new Dimension(MultiBitUI.WIZARD_MIN_WIDTH, MultiBitUI.WIZARD_MIN_HEIGHT));
+
+    // Show the panel specified by the initial state
+    show(wizardModel.getPanelName());
+
+  }
+
+  /**
+   * <p>Show the named panel</p>
+   *
+   * @param name The panel name
+   */
+  public void show(String name) {
+
+    Preconditions.checkState(wizardViewMap.containsKey(name), "'" + name + "' is not a valid panel name");
+
+    final AbstractWizardPanelView wizardPanelView = wizardViewMap.get(name);
+
+    if (!wizardPanelView.isInitialised()) {
+
+      // Initialise the wizard screen panel and add it to the card layout parent
+      wizardScreenHolder.add(wizardPanelView.getWizardScreenPanel(true), name);
+
+    }
+
+    // De-register any existing default buttons from previous panels
+    wizardPanelView.deregisterDefaultButton();
+
+    // Provide warning that the panel is about to be shown
+    if (wizardPanelView.beforeShow()) {
+
+      // No abort so show
+      cardLayout.show(wizardScreenHolder, name);
+
+      wizardPanelView.afterShow();
+    }
+
+  }
+
+  /**
+   * <p>Hide the wizard</p>
+   *
+   * @param isExitCancel True if this hide operation comes from an exit or cancel
+   * @param name         The panel name
+   */
+  public void hide(String name, boolean isExitCancel) {
+
+    Preconditions.checkState(wizardViewMap.containsKey(name), "'" + name + "' is not a valid panel name");
+
+    final AbstractWizardPanelView wizardPanelView = wizardViewMap.get(name);
+
+    // Provide warning that the panel is about to be shown
+    if (wizardPanelView.beforeHide(isExitCancel)) {
+
+      // De-register
+      wizardPanelView.deregisterDefaultButton();
+
+      // No abort so hide
+      Panels.hideLightBox();
+
+      // Issue the wizard hide event
+      ViewEvents.fireWizardHideEvent(name, wizardModel);
+
+    }
 
   }
 
@@ -106,37 +158,10 @@ public abstract class AbstractWizard<M extends WizardModel> {
   protected abstract void populateWizardViewMap(Map<String, AbstractWizardPanelView> wizardViewMap);
 
   /**
-   * <p>Close the wizard</p>
-   */
-  public void close() {
-
-    Panels.hideLightBox();
-
-  }
-
-  /**
-   * <p>Show the named panel</p>
-   */
-  public void show(String name) {
-
-    Preconditions.checkState(wizardViewMap.containsKey(name), "'" + name + "' is not a valid panel name");
-
-    final AbstractWizardPanelView wizardPanelView = wizardViewMap.get(name);
-
-    // Provide warning that the panel is about to be shown
-    if (wizardPanelView.beforeShow()) {
-
-      // No abort so show
-      cardLayout.show(wizardPanel, name);
-    }
-
-  }
-
-  /**
    * @return The wizard panel
    */
-  public JPanel getWizardPanel() {
-    return wizardPanel;
+  public JPanel getWizardScreenHolder() {
+    return wizardScreenHolder;
   }
 
   /**
@@ -168,7 +193,8 @@ public abstract class AbstractWizard<M extends WizardModel> {
     return new AbstractAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        Panels.hideLightBox();
+
+        hide(wizardModel.getPanelName(), true);
       }
     };
 
@@ -185,7 +211,25 @@ public abstract class AbstractWizard<M extends WizardModel> {
       @Override
       public void actionPerformed(ActionEvent e) {
 
-        Panels.hideLightBox();
+        hide(wizardModel.getPanelName(), false);
+
+      }
+    };
+  }
+
+  /**
+   * @param wizardView The wizard view (providing a reference to its underlying panel model)
+   *
+   * @return The "apply" action based on the model state
+   */
+  public <P> Action getApplyAction(final AbstractWizardPanelView<M, P> wizardView) {
+
+    return new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+
+        hide(wizardModel.getPanelName(), false);
+
       }
     };
   }
@@ -238,6 +282,31 @@ public abstract class AbstractWizard<M extends WizardModel> {
 
         // Move to the previous state
         wizardModel.showPrevious();
+
+        // Show the panel based on the state
+        show(wizardModel.getPanelName());
+      }
+    };
+  }
+
+  /**
+   * @param wizardView The wizard view (providing a reference to its underlying panel model)
+   *
+   * @return The "recover" action based on the model state
+   */
+  public <P> Action getRestoreAction(final AbstractWizardPanelView<M, P> wizardView) {
+
+    return new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+
+        // Ensure the panel updates its model (the button is outside of the panel itself)
+        wizardView.updateFromComponentModels(Optional.absent());
+
+        // Aggregate the panel information into the wizard model
+
+        // Move to the recover state (equivalent to next)
+        wizardModel.showNext();
 
         // Show the panel based on the state
         show(wizardModel.getPanelName());

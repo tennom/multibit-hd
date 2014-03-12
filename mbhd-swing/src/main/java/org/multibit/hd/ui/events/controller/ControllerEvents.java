@@ -1,12 +1,12 @@
 package org.multibit.hd.ui.events.controller;
 
 import org.multibit.hd.core.services.CoreServices;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.models.AlertModel;
 import org.multibit.hd.ui.views.screens.Screen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Locale;
 
 /**
  * <p>Factory to provide the following to application API:</p>
@@ -30,16 +30,6 @@ public class ControllerEvents {
   }
 
   /**
-   * <p>Broadcast a new "change locale" event</p>
-   *
-   * @param locale The new locale
-   */
-  public static void fireChangeLocaleEvent(Locale locale) {
-    log.trace("Firing 'change locale' event");
-    CoreServices.uiEventBus.post(new ChangeLocaleEvent(locale));
-  }
-
-  /**
    * <p>Broadcast a new "show detail screen" event</p>
    *
    * @param detailScreen The screen to show
@@ -57,6 +47,10 @@ public class ControllerEvents {
   public static void fireAddAlertEvent(AlertModel alertModel) {
     log.trace("Firing 'add alert' event");
     CoreServices.uiEventBus.post(new AddAlertEvent(alertModel));
+
+    // Keep track of this
+    CoreServices.logHistory(Languages.safeText(MessageKey.SHOW_ALERT) + " " + alertModel.getLocalisedMessage());
+
   }
 
   /**
@@ -65,6 +59,9 @@ public class ControllerEvents {
   public static void fireRemoveAlertEvent() {
     log.trace("Firing 'remove alert' event");
     CoreServices.uiEventBus.post(new RemoveAlertEvent());
+
+    // Keep track of this
+    CoreServices.logHistory(Languages.safeText(MessageKey.HIDE_ALERT));
   }
 
 }

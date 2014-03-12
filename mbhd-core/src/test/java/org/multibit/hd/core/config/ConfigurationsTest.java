@@ -34,13 +34,13 @@ public class ConfigurationsTest {
     Configuration configuration = Configurations.newDefaultConfiguration();
 
     // Bitcoin
-    assertThat(configuration.getBitcoinConfiguration().getBitcoinSymbol()).isEqualTo("ICON");
+    assertThat(configuration.getBitcoinConfiguration().getBitcoinSymbol()).isEqualTo("MICON");
+    assertThat(configuration.getBitcoinConfiguration().getDecimalSeparator()).isEqualTo('.');
+    assertThat(configuration.getBitcoinConfiguration().getGroupingSeparator()).isEqualTo(',');
+    assertThat(configuration.getBitcoinConfiguration().isCurrencySymbolLeading()).isTrue();
 
     // Internationalisation
-    assertThat(configuration.getLocale().getLanguage()).isEqualTo("en_gb");
-    assertThat(configuration.getI18NConfiguration().getDecimalSeparator()).isEqualTo('.');
-    assertThat(configuration.getI18NConfiguration().getGroupingSeparator()).isEqualTo(',');
-    assertThat(configuration.getI18NConfiguration().isCurrencySymbolLeading()).isTrue();
+    assertThat(configuration.getLocale().getLanguage()).isEqualTo("en");
 
     // Logging
     assertThat(configuration.getLoggingConfiguration().getLoggers().get("org.multibit")).isEqualTo(Level.DEBUG);
@@ -55,13 +55,13 @@ public class ConfigurationsTest {
     Properties properties = new ConfigurationWriteAdapter(configuration).adapt();
 
     // Bitcoin
-    assertThat(properties.get(BITCOIN_SYMBOL)).isEqualTo("ICON");
+    assertThat(properties.get(BITCOIN_SYMBOL)).isEqualTo("MICON");
+    assertThat(properties.get(BITCOIN_DECIMAL_SEPARATOR)).isEqualTo('.');
+    assertThat(properties.get(BITCOIN_GROUPING_SEPARATOR)).isEqualTo(',');
+    assertThat(properties.get(BITCOIN_IS_CURRENCY_PREFIXED)).isEqualTo("true");
 
     // Internationalisation
-    assertThat(properties.get(I18N_LOCALE).toString()).isEqualTo("en_gb");
-    assertThat(properties.get(I18N_DECIMAL_SEPARATOR)).isEqualTo('.');
-    assertThat(properties.get(I18N_GROUPING_SEPARATOR)).isEqualTo(',');
-    assertThat(properties.get(I18N_IS_CURRENCY_PREFIXED)).isEqualTo("true");
+    assertThat(properties.get(LANGUAGE_LOCALE).toString()).isEqualTo("en_GB");
 
     // Logging
     assertThat(properties.get(LOGGING_PACKAGE_PREFIX + "org.multibit")).isEqualTo("DEBUG");

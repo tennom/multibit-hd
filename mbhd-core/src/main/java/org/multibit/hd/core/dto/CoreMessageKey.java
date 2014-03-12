@@ -31,11 +31,31 @@ public enum CoreMessageKey {
   BITCOIN_SENT_OK("core_bitcoin_sent_ok"),
   BITCOIN_SEND_FAILED("core_bitcoin_send_failed"),
 
+  // Security
+  DEBUGGER_ATTACHED("core_debugger_attached"),
+  BACKUP_FAILED("core_backup_failed"),
+  SECURITY_ADVICE("core_security_advice"),
+
   // Errors
   THE_ERROR_WAS("core_the_error_was"),
   COULD_NOT_CONNECT_TO_BITCOIN_NETWORK("core_could_not_connect_to_bitcoin_network"),
   NO_ACTIVE_WALLET("core_no_active_wallet"),
 
+  // Transaction/Payment adaption
+  PAYMENT_REQUESTED("core_payment_requested"),
+  PAYMENT_RECEIVED("core_payment_received"),
+  PAYMENT_RECEIVING("core_payment_receiving"),
+  PAYMENT_SENT("core_payment_sent"),
+  PAYMENT_SENDING("core_payment_sending"),
+  CONFIRMED_BY_ONE_BLOCK("core_confirmed_by_one_block"),
+  CONFIRMED_BY_SEVERAL_BLOCKS("core_confirmed_by_several_blocks"),
+  BROADCAST("core_broadcast"),
+  NOT_BROADCAST("core_not_broadcast"),
+  DEAD("core_dead"),
+  UNKNOWN("core_unknown"),
+
+  TRANSACTION_TO("core_transaction_to"),
+  TRANSACTION_BY("core_transaction_by")
   // End of enum
   ;
 

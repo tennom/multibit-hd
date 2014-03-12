@@ -12,6 +12,8 @@ import org.multibit.hd.ui.utils.ClipboardUtils;
 import org.multibit.hd.ui.views.components.*;
 import org.multibit.hd.ui.views.components.auto_complete.AutoCompleteFilter;
 import org.multibit.hd.ui.views.components.auto_complete.AutoCompleteFilters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -30,6 +32,8 @@ import java.awt.image.BufferedImage;
  *  
  */
 public class EnterRecipientView extends AbstractComponentView<EnterRecipientModel> {
+
+  private static final Logger log = LoggerFactory.getLogger(EnterRecipientView.class);
 
   // View components
   private JComboBox<Recipient> recipientComboBox;
@@ -61,7 +65,7 @@ public class EnterRecipientView extends AbstractComponentView<EnterRecipientMode
     pasteButton = Buttons.newPasteButton(getPasteAction());
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[][][][]", // Columns
       "[]" // Rows
     ));
@@ -72,7 +76,7 @@ public class EnterRecipientView extends AbstractComponentView<EnterRecipientMode
 
     panel.add(Labels.newRecipient());
     // Specify minimum width for consistent appearance across contact names and locales
-    panel.add(recipientComboBox, "growx,w min:350:,push");
+    panel.add(recipientComboBox, "growx,width min:350:,push");
     panel.add(pasteButton, "shrink");
     panel.add(imageLabel, "shrink,wrap");
 
@@ -81,10 +85,18 @@ public class EnterRecipientView extends AbstractComponentView<EnterRecipientMode
   }
 
   @Override
+  public void requestInitialFocus() {
+
+  }
+
+  @Override
   public void updateModelFromView() {
 
     Object selectedItem = recipientComboBox.getSelectedItem();
     Object editedItem = recipientComboBox.getEditor().getItem();
+
+    log.debug("selectedItem = " + selectedItem);
+    log.debug("editedItem = " + selectedItem);
 
     // Use pastes in preference to selection
     if (editedItem != null) {
@@ -117,8 +129,6 @@ public class EnterRecipientView extends AbstractComponentView<EnterRecipientMode
 
           final ListenableFuture<Optional<BufferedImage>> imageFuture = Gravatars.retrieveGravatar(emailAddress);
           Futures.addCallback(imageFuture, new FutureCallback<Optional<BufferedImage>>() {
-
-            // we want this handler to run immediately after we push the big red button!
             public void onSuccess(Optional<BufferedImage> image) {
               if (image.isPresent()) {
 
@@ -163,6 +173,7 @@ public class EnterRecipientView extends AbstractComponentView<EnterRecipientMode
         Optional<String> pastedText = ClipboardUtils.pasteStringFromClipboard();
 
         if (pastedText.isPresent()) {
+          log.debug("Pasted text :'" + pastedText.get());
 
           recipientComboBox.getEditor().setItem(pastedText.get());
           updateModelFromView();

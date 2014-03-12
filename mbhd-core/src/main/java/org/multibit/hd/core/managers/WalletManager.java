@@ -11,9 +11,9 @@ import com.google.bitcoin.store.WalletProtobufSerializer;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
-import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.events.CoreEvents;
 import org.multibit.hd.core.events.TransactionSeenEvent;
 import org.multibit.hd.core.exceptions.WalletLoadException;
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.asn1.sec.SECNamedCurves;
 import org.spongycastle.asn1.x9.X9ECParameters;
+import org.spongycastle.crypto.params.KeyParameter;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -34,9 +35,9 @@ import java.util.concurrent.TimeUnit;
  *  <p>Manager to provide the following to core users:<br>
  *  <ul>
  *  <li>create wallet</li>
- *  <li>load wallet</li>
- *  <li>store wallet</li>
- *  <li>tracks the current wallet and the list of wallet directories</li>
+ *  <li>save wallet wallet</li>
+ *  <li>load wallet wallet</li>
+ * <li>tracks the current wallet and the list of wallet directories</li>
  *  </ul>
  */
 public enum WalletManager implements WalletEventListener {
@@ -103,7 +104,7 @@ public enum WalletManager implements WalletEventListener {
   /**
    * The wallet version number for protobuf encrypted wallets - compatible with MultiBit
    */
-  public static final int ENCRYPTED_WALLET_VERSION = 3; // TODO - need a new version when the wallet format is modified
+  public static final int ENCRYPTED_WALLET_VERSION = 3; // TODO - need a new version when the wallet HD format is created
 
   public static final String MBHD_WALLET_PREFIX = "mbhd";
   public static final String MBHD_WALLET_SUFFIX = ".wallet";
@@ -116,11 +117,12 @@ public enum WalletManager implements WalletEventListener {
   private Optional<WalletData> currentWalletData = Optional.absent();
 
   /**
-   * Initialise enum, load up the available wallets and find the current wallet
+   * Initialise enum, loadContacts up the available wallets and find the current wallet
    *
-   * @param applicationDataDirectory The directory in which to store and read wallets.
+   * @param applicationDataDirectory The directory in which to writeContacts and read wallets.
    */
   public void initialise(File applicationDataDirectory) {
+
     this.applicationDataDirectory = applicationDataDirectory;
 
     // Work out the list of available wallets in the application data directory
@@ -128,8 +130,7 @@ public enum WalletManager implements WalletEventListener {
 
     // TODO enable user to switch wallets - currently using the first
 
-    // If a wallet directory is present try to load it.
-    // TODO catch wallet load exceptions and report
+    // If a wallet directory is present try to load the wallet
     if (!walletDirectories.isEmpty()) {
       String walletFilename = walletDirectories.get(0) + File.separator + MBHD_WALLET_NAME;
       WalletData walletData = loadFromFile(new File(walletFilename));
@@ -137,6 +138,7 @@ public enum WalletManager implements WalletEventListener {
     } else {
       currentWalletData = Optional.absent();
     }
+
   }
 
   /**
@@ -153,10 +155,11 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException if there is already a simple wallet but the wallet version cannot be understood
    */
   public WalletData createWallet(byte[] seed, CharSequence password) throws WalletLoadException, WalletVersionException, IOException {
+
     File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
     return createWallet(applicationDataDirectory.getAbsolutePath(), seed, password);
-  }
 
+  }
 
   /**
    * Create a wallet that contains only a single, random private key.
@@ -176,6 +179,7 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException if there is already a wallet but the wallet version cannot be understood
    */
   public WalletData createWallet(String parentDirectoryName, byte[] seed, CharSequence password) throws WalletLoadException, WalletVersionException, IOException {
+
     WalletData walletDataToReturn;
 
     // Create a wallet id from the seed to work out the wallet root directory
@@ -185,9 +189,11 @@ public enum WalletManager implements WalletEventListener {
     File walletDirectory = WalletManager.getWalletDirectory(parentDirectoryName, walletRoot);
     File walletFile = new File(walletDirectory.getAbsolutePath() + File.separator + MBHD_WALLET_NAME);
     if (walletFile.exists()) {
-      // There is already a wallet created with this root - if so load it and return that
+      // There is already a wallet created with this root - if so loadContacts it and return that
       walletDataToReturn = loadFromFile(walletFile);
-      Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
+      if (Configurations.currentConfiguration != null) {
+        Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
+      }
       setCurrentWalletData(walletDataToReturn);
     } else {
       // Create the containing directory if it does not exist
@@ -202,10 +208,11 @@ public enum WalletManager implements WalletEventListener {
       Wallet walletToReturn = new Wallet(BitcoinNetworkService.NETWORK_PARAMETERS, keyCrypter);
       walletToReturn.setVersion(ENCRYPTED_WALLET_VERSION);
 
+      // Add the 'zero index' key into the wallet
       // Ensure that the seed is within the Bitcoin EC group.
-      BigInteger seedBigInteger = moduloSeedByECGroupSize(seed);
+      BigInteger privateKeyToUse = moduloSeedByECGroupSize(new BigInteger(1, seed));
 
-      ECKey newKey = new ECKey(seedBigInteger);
+      ECKey newKey = new ECKey(privateKeyToUse);
       newKey = newKey.encrypt(walletToReturn.getKeyCrypter(), walletToReturn.getKeyCrypter().deriveKey(password));
       walletToReturn.addKey(newKey);
 
@@ -214,12 +221,13 @@ public enum WalletManager implements WalletEventListener {
       // The listener has a 'after save' callback which ensures rolling backups and local/ cloud backups are also saved where necessary
       walletToReturn.autosaveToFile(walletFile, AUTOSAVE_DELAY, TimeUnit.MILLISECONDS, new WalletAutoSaveListener());
 
-      // Save it now to ensure it is on te disk
+      // Save it now to ensure it is on the disk
       saveWallet(walletToReturn, walletFile.getAbsolutePath());
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
       }
       walletDataToReturn = new WalletData(walletId, walletToReturn);
+      walletDataToReturn.setPassword(password);
       setCurrentWalletData(walletDataToReturn);
     }
 
@@ -235,23 +243,47 @@ public enum WalletManager implements WalletEventListener {
   }
 
   /**
+   * Create a new key for the wallet using the seed of the wallet and an index 0, 1,2,3,4 etc.
+   * <p/>
+   * TODO this will be replaced by the proper HD wallet algorithm when it is added to bitcoinj
+   * Note that the "last used index"needs to be persisted - this is currently stored in the top level of the payments db
+   * but it would be better in the wallet itself
+   */
+  public ECKey createAndAddNewWalletKey(Wallet wallet, CharSequence walletPassword, int indexToCreate) {
+    Preconditions.checkState(wallet.getKeychainSize() > 0, "There is no 'first key' to derive subsequent keys from");
+
+    // Get the private key from the first private key in the wallet - subsequent keys are derived from this.
+    ECKey firstKey = wallet.getKeys().get(0);
+    KeyParameter aesKey = wallet.getKeyCrypter().deriveKey(walletPassword);
+    ECKey decryptedFirstKey = firstKey.decrypt(wallet.getKeyCrypter(), aesKey);
+
+    // Ensure that the seed combined with the index is within the Bitcoin EC group.
+    BigInteger privateKeyToUse = moduloSeedByECGroupSize(new BigInteger(1, decryptedFirstKey.getPrivKeyBytes()).add(BigInteger.valueOf(indexToCreate)));
+
+    ECKey newKey = new ECKey(privateKeyToUse);
+    newKey = newKey.encrypt(wallet.getKeyCrypter(), aesKey);
+    wallet.addKey(newKey);
+
+    return newKey;
+  }
+
+  /**
    * Ensure that the seed is within the range of the bitcoin EC group
    *
-   * @param seed
-   * @return the seed, guaranteed to be within the Bitcon EC group range
+   * @param seedAsBigInteger the seed - converted to a BigInteger
+   * @return the seed, guaranteed to be within the Bitcoin EC group range
    */
-  private BigInteger moduloSeedByECGroupSize(byte[] seed) {
+  private BigInteger moduloSeedByECGroupSize(BigInteger seedAsBigInteger) {
     X9ECParameters params = SECNamedCurves.getByName("secp256k1");
     BigInteger sizeOfGroup = params.getN();
 
-    BigInteger seedBigInteger = new BigInteger(1, seed);
-    return seedBigInteger.mod(sizeOfGroup);
+    return seedAsBigInteger.mod(sizeOfGroup);
   }
 
   /**
    * Load up a Wallet from a specified wallet file.
    *
-   * @param walletFile The file containing the wallet to load
+   * @param walletFile The file containing the wallet to loadContacts
    * @return Wallet - the loaded wallet
    * @throws IllegalArgumentException if wallet file is null
    * @throws WalletLoadException
@@ -267,7 +299,7 @@ public enum WalletManager implements WalletEventListener {
     try {
       if (isWalletSerialised(walletFile)) {
         // Serialised wallets are no longer supported.
-        throw new WalletLoadException("Could not load wallet '" + walletFilename
+        throw new WalletLoadException("Could not loadContacts wallet '" + walletFilename
                 + "'. Serialized wallets are no longer supported.");
       }
 
@@ -331,8 +363,8 @@ public enum WalletManager implements WalletEventListener {
       }
       log.debug("... done saving wallet file.");
 
-    } catch (IOException ioe) {
-      throw new WalletSaveException("Cannot save wallet '" + walletFilename, ioe);
+    } catch (IOException | UnsupportedOperationException e) {
+      throw new WalletSaveException("Cannot save wallet '" + walletFilename, e);
     } finally {
       if (fileOutputStream != null) {
         try {
@@ -357,8 +389,6 @@ public enum WalletManager implements WalletEventListener {
       // or protobuf format.
       stream = new BufferedInputStream(new FileInputStream(walletFile));
       isWalletSerialised = stream.read() == 0xac && stream.read() == 0xed;
-    } catch (FileNotFoundException e) {
-      log.error(e.getClass().getCanonicalName() + " " + e.getMessage());
     } catch (IOException e) {
       log.error(e.getClass().getCanonicalName() + " " + e.getMessage());
     } finally {
@@ -465,6 +495,4 @@ public enum WalletManager implements WalletEventListener {
       return Optional.absent();
     }
   }
-
-
 }

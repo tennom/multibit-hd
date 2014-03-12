@@ -68,7 +68,7 @@ public class EnterAmountModel implements Model<EnterAmountModel> {
     satoshis = Optional.of(value);
 
     // Fire a component model updated event
-    ViewEvents.fireWizardComponentModelChangedEvent(panelName, Optional.of(this));
+    ViewEvents.fireComponentChangedEvent(panelName, Optional.of(this));
 
   }
 
@@ -76,7 +76,7 @@ public class EnterAmountModel implements Model<EnterAmountModel> {
    * @return The local amount (zero if not present)
    */
   public BigMoney getLocalAmount() {
-    CurrencyUnit currencyUnit = Configurations.currentConfiguration.getI18NConfiguration().getLocalCurrencyUnit();
+    CurrencyUnit currencyUnit = Configurations.currentConfiguration.getBitcoinConfiguration().getLocalCurrencyUnit();
     return localAmount.or(BigMoney.zero(currencyUnit));
   }
 

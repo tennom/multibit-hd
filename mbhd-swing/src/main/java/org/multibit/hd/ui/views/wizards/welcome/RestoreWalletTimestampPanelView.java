@@ -4,16 +4,15 @@ import com.google.common.base.Optional;
 import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.core.utils.Dates;
 import org.multibit.hd.ui.events.view.ViewEvents;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.Components;
 import org.multibit.hd.ui.views.components.ModelAndView;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
-import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.components.enter_password.EnterPasswordModel;
 import org.multibit.hd.ui.views.components.enter_password.EnterPasswordView;
 import org.multibit.hd.ui.views.components.enter_seed_phrase.EnterSeedPhraseModel;
 import org.multibit.hd.ui.views.components.enter_seed_phrase.EnterSeedPhraseView;
+import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.wizards.AbstractWizard;
 import org.multibit.hd.ui.views.wizards.AbstractWizardPanelView;
@@ -42,9 +41,8 @@ public class RestoreWalletTimestampPanelView extends AbstractWizardPanelView<Wel
    */
   public RestoreWalletTimestampPanelView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.RESTORE_WALLET_TIMESTAMP_TITLE);
+    super(wizard, panelName, MessageKey.RESTORE_WALLET_TIMESTAMP_TITLE, AwesomeIcon.MAGIC);
 
-    PanelDecorator.addExitCancelPreviousNext(this, wizard);
   }
 
   @Override
@@ -68,21 +66,37 @@ public class RestoreWalletTimestampPanelView extends AbstractWizardPanelView<Wel
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.GLOBE);
-
-    panel.setLayout(new MigLayout(
-      "fill,insets 0,hidemode 1", // Layout constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migLayout("fill,insets 0,hidemode 1"),
       "[]", // Column constraints
       "[][]" // Row constraints
     ));
 
-    panel.add(Panels.newRestoreFromTimestamp(), "wrap");
-    panel.add(enterSeedPhraseMaV.getView().newComponentPanel(), "wrap");
-    panel.add(enterPasswordMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(Panels.newRestoreFromTimestamp(), "wrap");
+    contentPanel.add(enterSeedPhraseMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(enterPasswordMaV.getView().newComponentPanel(), "wrap");
 
-    return panel;
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<WelcomeWizardModel> wizard) {
+
+    PanelDecorator.addExitCancelPreviousNext(this, wizard);
+
+  }
+
+  @Override
+  public void afterShow() {
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        enterSeedPhraseMaV.getView().requestInitialFocus();
+      }
+    });
+
   }
 
   @Override

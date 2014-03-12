@@ -1,8 +1,8 @@
 package org.multibit.hd.ui.views;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
-import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.events.controller.ControllerEvents;
 import org.multibit.hd.ui.events.controller.ShowScreenEvent;
@@ -23,15 +23,14 @@ import java.util.Map;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class DetailView {
 
   private final JPanel contentPanel;
 
   private CardLayout cardLayout = new CardLayout();
-
-  private JPanel screenHolder = Panels.newPanel(cardLayout);
+  private JPanel screenPanel = Panels.newPanel(cardLayout);
 
   private Map<Screen, AbstractScreenView> screenViewMap = Maps.newHashMap();
 
@@ -39,29 +38,18 @@ public class DetailView {
 
     CoreServices.uiEventBus.register(this);
 
-    MigLayout layout = new MigLayout(
-      "fill,insets 0", // Layout constraints
-      "[]", // Column constraints
-      "[]" // Row constraints
-    );
-    contentPanel = Panels.newPanel(layout);
+    contentPanel = Panels.newPanel();
 
-    // Override the default theme
+    // Apply theme
     contentPanel.setBackground(Themes.currentTheme.detailPanelBackground());
 
-    for (Screen screen: Screen.values()) {
+    // Apply opacity
+    contentPanel.setOpaque(true);
 
-      AbstractScreenView view = Screens.newScreen(screen);
+    // Populate based on the current locale
+    populateScreenViewMap();
 
-      // Keep track of the view instances in case of a locale change
-      screenViewMap.put(screen, view);
-
-      // Add their panels to the overall card layout
-      screenHolder.add(view.newScreenViewPanel(), screen.name());
-
-    }
-
-    // Once all the views are initialised allow events to occur
+    // Once all the views are created allow events to occur
     for (Map.Entry<Screen, AbstractScreenView> entry : screenViewMap.entrySet()) {
 
       // Ensure the screen is in the correct starting state
@@ -70,9 +58,27 @@ public class DetailView {
     }
 
     // Add the screen holder to the overall content panel
-    contentPanel.add(screenHolder, "grow");
+    contentPanel.add(screenPanel, "grow");
 
+    // TODO Bind this into the configuration for last selected screen
+    // Show the initial screen
     ControllerEvents.fireShowDetailScreenEvent(Screen.WALLET);
+
+  }
+
+  /**
+   * Populate all the available screens but do not initialise them
+   */
+  private void populateScreenViewMap() {
+
+    for (Screen screen : Screen.values()) {
+
+      AbstractScreenView view = Screens.newScreen(screen);
+
+      // Keep track of the view instances but don't initialise them
+      screenViewMap.put(screen, view);
+
+    }
 
   }
 
@@ -86,7 +92,19 @@ public class DetailView {
   @Subscribe
   public void onShowDetailScreen(ShowScreenEvent event) {
 
-    cardLayout.show(screenHolder, event.getScreen().name());
+    Preconditions.checkNotNull(event, "'event' must be present");
+
+    Screen screen = event.getScreen();
+    AbstractScreenView view = screenViewMap.get(screen);
+
+    if (!view.isInitialised()) {
+
+      // Initialise the panel and add it to the card layout parent
+      screenPanel.add(view.getScreenViewPanel(), screen.name());
+
+    }
+
+    cardLayout.show(screenPanel, event.getScreen().name());
 
   }
 

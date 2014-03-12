@@ -7,22 +7,25 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.multibit.hd.core.dto.TransactionData;
-import org.multibit.hd.core.dto.WalletData;
-import org.multibit.hd.core.seed_phrase.Bip39SeedPhraseGenerator;
-import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
 import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.core.dto.PaymentData;
+import org.multibit.hd.core.dto.WalletData;
+import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.events.BitcoinNetworkChangedEvent;
 import org.multibit.hd.core.events.BitcoinSentEvent;
 import org.multibit.hd.core.managers.BackupManager;
 import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.managers.WalletManagerTest;
+import org.multibit.hd.core.seed_phrase.Bip39SeedPhraseGenerator;
+import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
 import org.multibit.hd.core.utils.Dates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -108,25 +111,21 @@ public class BitcoinNetworkServiceFunctionalTest {
     // (The wallet is logged to the console so you can see the address you need to fund).
     assertThat(walletBalance.compareTo(BigInteger.ZERO) > 0).isTrue();
 
-    // See if there are any transactions
+    // See if there are any payments
     WalletService walletService = CoreServices.newWalletService();
 
-    walletService.start();
+    walletService.initialise(temporaryDirectory, new WalletId(seed));
 
-    // Get the current wallets transactions - there should be some
-    Set<TransactionData>transactions = walletService.getTransactions();
+    // Get the current wallets payments - there should be some
+    List<PaymentData> transactions = walletService.getPaymentDataList(Locale.UK);
 
-    log.debug("The transactions in the wallet are:\n" + transactions);
+    log.debug("The payments in the wallet are:\n" + transactions);
     assertThat(transactions.size() > 0).isTrue();
-
-    walletService.stopAndWait();
-
-
   }
 
   @Test
   public void testSendBetweenTwoRealWallets() throws Exception {
-    // Create a random temporary directory to store the wallets
+    // Create a random temporary directory to writeContacts the wallets
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
     walletManager.initialise(temporaryDirectory);
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
@@ -168,7 +167,7 @@ public class BitcoinNetworkServiceFunctionalTest {
     log.debug("Wallet data 2 = \n" + walletData2.toString());
 
 
-    // Check older transactions (probably from earlier runs of this test) have confirmed
+    // Check older payments (probably from earlier runs of this test) have confirmed
     assertThat(transactionsAreOK(walletData1)).isTrue();
     assertThat(transactionsAreOK(walletData2)).isTrue();
 
@@ -274,10 +273,10 @@ public class BitcoinNetworkServiceFunctionalTest {
   }
 
   /**
-   * Check that transactions have been confirmed in a reasonable time.
+   * Check that payments have been confirmed in a reasonable time.
    *
-   * @param walletData the walletdata whose transactions you want to check
-   * @return true is transactions have confirmed as expected, false otherwise
+   * @param walletData the walletdata whose payments you want to check
+   * @return true is payments have confirmed as expected, false otherwise
    */
   private boolean transactionsAreOK(WalletData walletData) {
     boolean transactionsAreOK = true;
@@ -285,7 +284,7 @@ public class BitcoinNetworkServiceFunctionalTest {
     if (walletData.getWallet() != null) {
       Set<Transaction> transactions = walletData.getWallet().getTransactions(true);
       for (Transaction transaction :transactions) {
-        // If the transactions is 'reasonably old' we expect it to have confirmed
+        // If the payments is 'reasonably old' we expect it to have confirmed
         DateTime now = new org.joda.time.DateTime();
 
         if (now.minusHours(4).toDate().after(transaction.getUpdateTime())) {

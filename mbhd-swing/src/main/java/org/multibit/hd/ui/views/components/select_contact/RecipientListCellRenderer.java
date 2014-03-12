@@ -2,6 +2,7 @@ package org.multibit.hd.ui.views.components.select_contact;
 
 import org.multibit.hd.core.dto.Recipient;
 import org.multibit.hd.ui.utils.HtmlUtils;
+import org.multibit.hd.ui.views.themes.Themes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,9 @@ public class RecipientListCellRenderer extends JLabel implements ListCellRendere
 
     this.textField = textField;
 
+    // Must be opaque to ensure background color is shown
     setOpaque(true);
+
     setVerticalAlignment(CENTER);
 
   }
@@ -40,23 +43,24 @@ public class RecipientListCellRenderer extends JLabel implements ListCellRendere
     boolean cellHasFocus
   ) {
 
+    // Ensure the popup list retains a nice border
+    list.setBorder(BorderFactory.createLineBorder(Themes.currentTheme.dataEntryBorder()));
+
     if (isSelected) {
       setBackground(list.getSelectionBackground());
       setForeground(list.getSelectionForeground());
     } else {
-      setBackground(list.getBackground());
-      setForeground(list.getForeground());
+      setBackground(Themes.currentTheme.dataEntryBackground());
+      setForeground(Themes.currentTheme.buttonText());
     }
 
     String fragment = textField.getText();
-    log.debug("Recipient fragment: '{}'",fragment);
     String sourceText;
     if (value.getContact().isPresent()) {
       sourceText = value.getContact().get().getName();
     } else {
       sourceText = value.getBitcoinAddress();
     }
-    log.debug("Recipient source text: '{}'",sourceText);
 
     // Embolden the matching fragments
     setText(HtmlUtils.applyBoldFragments(fragment, sourceText));
@@ -66,5 +70,10 @@ public class RecipientListCellRenderer extends JLabel implements ListCellRendere
 
     return this;
   }
+
+  @Override public String getName() {
+    return "List.cellRenderer";
+  }
+
 
 }

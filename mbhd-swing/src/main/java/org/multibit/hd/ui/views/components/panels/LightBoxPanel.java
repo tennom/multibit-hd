@@ -19,19 +19,20 @@ import java.awt.event.MouseListener;
  */
 public class LightBoxPanel extends JPanel {
 
-  private final JPanel contentPanel;
+  private final JPanel screenPanel;
 
   /**
-   * @param contentPanel The panel containing the light box components (e.g. a wizard)
-   * @param layer The layer which to place the panel (JLayeredPane.POPUP_LAYER is normal, DRAG_LAYER for popovers)
+   * @param screenPanel The panel containing the light box components (e.g. a wizard screen panel)
+   * @param layer       The layer which to place the panel (JLayeredPane.MODAL_LAYER for wizards, DRAG_LAYER for popovers within wizards)
    */
-  public LightBoxPanel(JPanel contentPanel, Integer layer) {
+  public LightBoxPanel(JPanel screenPanel, Integer layer) {
 
-    Preconditions.checkNotNull(contentPanel, "'panel' must be present");
-    Preconditions.checkState(contentPanel.getWidth() > 0, "'width' must be greater than zero");
-    Preconditions.checkState(contentPanel.getHeight() > 0, "'height' must be greater than zero");
+    Preconditions.checkNotNull(screenPanel, "'panel' must be present");
 
-    this.contentPanel = contentPanel;
+    Preconditions.checkState(screenPanel.getWidth() > 0, "'width' must be greater than zero");
+    Preconditions.checkState(screenPanel.getHeight() > 0, "'height' must be greater than zero");
+
+    this.screenPanel = screenPanel;
 
     // Ensure we set the opacity (platform dependent)
     setOpaque(false);
@@ -41,8 +42,6 @@ public class LightBoxPanel extends JPanel {
 
     // Prevent mouse events reaching through the darkened border
     addMouseListener(new ModalMouseListener());
-
-    // TODO Prevent focus events reaching through the darkened border
 
     // Add this panel to the frame's layered panel as the palette layer (directly above the default)
     if (JLayeredPane.MODAL_LAYER.equals(layer)) {
@@ -55,7 +54,7 @@ public class LightBoxPanel extends JPanel {
     calculatePosition();
 
     // Add the light box panel to the frame
-    Panels.frame.getLayeredPane().add(contentPanel, layer);
+    Panels.frame.getLayeredPane().add(screenPanel, layer);
 
   }
 
@@ -67,8 +66,8 @@ public class LightBoxPanel extends JPanel {
     int currentFrameWidth = Panels.frame.getWidth();
     int currentFrameHeight = Panels.frame.getHeight();
 
-    int minPanelWidth = (int) contentPanel.getMinimumSize().getWidth();
-    int minPanelHeight = (int) contentPanel.getMinimumSize().getHeight();
+    int minPanelWidth = (int) screenPanel.getMinimumSize().getWidth();
+    int minPanelHeight = (int) screenPanel.getMinimumSize().getHeight();
 
     // Use the panel's minimum size to prevent further resizing
     int frameWidth = currentFrameWidth < minPanelWidth ? minPanelWidth : currentFrameWidth;
@@ -81,14 +80,14 @@ public class LightBoxPanel extends JPanel {
     setSize(frameWidth * 2, frameHeight * 2);
 
     // Center the light box panel in the frame
-    int x = (frameWidth - contentPanel.getWidth()) / 2;
-    int y = (frameHeight - contentPanel.getHeight()) / 2;
+    int x = (frameWidth - screenPanel.getWidth()) / 2;
+    int y = (frameHeight - screenPanel.getHeight()) / 2;
 
     // Avoid any negative values if resizing gets cramped
     x = x < 0 ? 0 : x;
     y = y < 0 ? 0 : y;
 
-    contentPanel.setLocation(x, y);
+    screenPanel.setLocation(x, y);
   }
 
   /**
@@ -96,9 +95,11 @@ public class LightBoxPanel extends JPanel {
    */
   public void close() {
 
-    // Tidy up the layered pane
+    // Tidy up the layered pane - cannot remove by reference
+    // The lightbox panel is always here
     Panels.frame.getLayeredPane().remove(1);
-    Panels.frame.getLayeredPane().remove(contentPanel);
+    // The content panel is always here after the removal
+    Panels.frame.getLayeredPane().remove(0);
 
     // Repaint
     Panels.frame.validate();

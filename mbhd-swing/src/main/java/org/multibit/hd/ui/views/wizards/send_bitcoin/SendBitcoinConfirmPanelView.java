@@ -3,15 +3,16 @@ package org.multibit.hd.ui.views.wizards.send_bitcoin;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import net.miginfocom.swing.MigLayout;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.core.config.Configuration;
+import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.ui.events.view.ViewEvents;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.*;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountModel;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountStyle;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountView;
 import org.multibit.hd.ui.views.components.enter_password.EnterPasswordModel;
 import org.multibit.hd.ui.views.components.enter_password.EnterPasswordView;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
 import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.wizards.AbstractWizard;
@@ -41,15 +42,15 @@ public class SendBitcoinConfirmPanelView extends AbstractWizardPanelView<SendBit
 
   private JLabel recipientSummaryLabel;
 
+  private SendBitcoinConfirmPanelModel panelModel;
+
   /**
    * @param wizard    The wizard managing the states
    * @param panelName The panel name for filtering component events
    */
   public SendBitcoinConfirmPanelView(AbstractWizard<SendBitcoinWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.CONFIRM_SEND_TITLE);
-
-    PanelDecorator.addCancelPreviousSend(this, wizard);
+    super(wizard, panelName, MessageKey.CONFIRM_SEND_TITLE, AwesomeIcon.CLOUD_UPLOAD);
 
   }
 
@@ -62,7 +63,7 @@ public class SendBitcoinConfirmPanelView extends AbstractWizardPanelView<SendBit
     enterPasswordMaV = Components.newEnterPasswordMaV(getPanelName());
 
     // Configure the panel model
-    SendBitcoinConfirmPanelModel panelModel = new SendBitcoinConfirmPanelModel(
+    panelModel = new SendBitcoinConfirmPanelModel(
       getPanelName(),
       enterPasswordMaV.getModel()
     );
@@ -74,56 +75,62 @@ public class SendBitcoinConfirmPanelView extends AbstractWizardPanelView<SendBit
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
     // Blank labels populated from wizard model later
-    recipientSummaryLabel = new JLabel("");
+    recipientSummaryLabel = Labels.newBlankLabel();
 
     // User entered text
     notesTextArea = TextBoxes.newEnterNotes();
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.CLOUD_UPLOAD);
-
-    panel.setLayout(new MigLayout(
-      "fillx,insets 0", // Layout constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migXYLayout(),
       "[][]", // Column constraints
       "[]10[]10[][][]10[][]" // Row constraints
     ));
 
-    panel.add(Labels.newConfirmSendAmount(), "span 2,push,wrap");
-    panel.add(Labels.newRecipient());
-    panel.add(recipientSummaryLabel, "wrap");
-    panel.add(Labels.newAmount(), "baseline");
-    panel.add(transactionDisplayAmountMaV.getView().newComponentPanel(), "wrap");
-    panel.add(Labels.newTransactionFee(getWizardModel().getTransactionFee()), "top");
-    panel.add(transactionFeeDisplayAmountMaV.getView().newComponentPanel(), "wrap");
-    panel.add(Labels.newDeveloperFee(getWizardModel().getDeveloperFee()), "top");
-    panel.add(developerFeeDisplayAmountMaV.getView().newComponentPanel(), "wrap");
-    panel.add(Labels.newNotes());
-    panel.add(notesTextArea, "growx,push,wrap");
-    panel.add(Labels.newEnterPassword());
-    panel.add(enterPasswordMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(Labels.newConfirmSendAmount(), "span 2,push,wrap");
+    contentPanel.add(Labels.newRecipient());
+    contentPanel.add(recipientSummaryLabel, "wrap");
+    contentPanel.add(Labels.newAmount(), "baseline");
+    contentPanel.add(transactionDisplayAmountMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(Labels.newTransactionFee(getWizardModel().getTransactionFee()), "top");
+    contentPanel.add(transactionFeeDisplayAmountMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(Labels.newDeveloperFee(getWizardModel().getDeveloperFee()), "top");
+    contentPanel.add(developerFeeDisplayAmountMaV.getView().newComponentPanel(), "wrap");
+    contentPanel.add(Labels.newNotes());
+    contentPanel.add(notesTextArea, "growx,push,wrap");
+    contentPanel.add(Labels.newEnterPassword());
+    contentPanel.add(enterPasswordMaV.getView().newComponentPanel(), "wrap");
 
-    return panel;
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<SendBitcoinWizardModel> wizard) {
+
+    PanelDecorator.addCancelPreviousSend(this, wizard);
+
   }
 
   @Override
   public boolean beforeShow() {
 
+    Configuration configuration = Configurations.currentConfiguration;
+
     // Update the model and view for the amount
     transactionDisplayAmountMaV.getModel().setSatoshis(getWizardModel().getSatoshis());
     transactionDisplayAmountMaV.getModel().setLocalAmount(getWizardModel().getLocalAmount());
-    transactionDisplayAmountMaV.getView().updateView();
+    transactionDisplayAmountMaV.getView().updateView(configuration);
 
     // Update the model and view for the transaction fee
     transactionFeeDisplayAmountMaV.getModel().setSatoshis(getWizardModel().getTransactionFee());
     transactionFeeDisplayAmountMaV.getModel().setLocalAmountVisible(false);
-    transactionFeeDisplayAmountMaV.getView().updateView();
+    transactionFeeDisplayAmountMaV.getView().updateView(configuration);
 
     // Update the model and view for the developer fee
     developerFeeDisplayAmountMaV.getModel().setSatoshis(getWizardModel().getDeveloperFee());
     developerFeeDisplayAmountMaV.getModel().setLocalAmountVisible(false);
-    developerFeeDisplayAmountMaV.getView().updateView();
+    developerFeeDisplayAmountMaV.getView().updateView(configuration);
 
     // Update the model and view for the recipient
     recipientSummaryLabel.setText(getWizardModel().getRecipient().getSummary());
@@ -132,15 +139,29 @@ public class SendBitcoinConfirmPanelView extends AbstractWizardPanelView<SendBit
   }
 
   @Override
+  public void afterShow() {
+
+    registerDefaultButton(getNextButton());
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        notesTextArea.requestFocusInWindow();
+      }
+    });
+
+  }
+
+  @Override
   public void updateFromComponentModels(Optional componentModel) {
 
-    // No need to update since we expose the component models
+    panelModel.setNotes(notesTextArea.getText());
 
     // Determine any events
     ViewEvents.fireWizardButtonEnabledEvent(
-      getPanelName(),
-      WizardButton.NEXT,
-      isNextEnabled()
+            getPanelName(),
+            WizardButton.NEXT,
+            isNextEnabled()
     );
 
   }

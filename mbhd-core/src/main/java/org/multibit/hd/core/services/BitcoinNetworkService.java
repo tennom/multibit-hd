@@ -155,8 +155,14 @@ public class BitcoinNetworkService extends AbstractService {
         BackupManager.INSTANCE.createRollingBackup(walletData);
         BackupManager.INSTANCE.createLocalAndCloudBackup(walletId);
       } catch (IOException ioe) {
-        log.error("Could not write wallet and backkups for wallet with id '" + walletId + "' successfully. The error was '" + ioe.getMessage() + "'");
+        log.error("Could not write wallet and backups for wallet with id '" + walletId + "' successfully. The error was '" + ioe.getMessage() + "'");
       }
+    }
+  }
+
+  public void recalculateFastCatchupAndFilter() {
+    if (peerGroup != null) {
+      peerGroup.recalculateFastCatchupAndFilter(PeerGroup.FilterRecalculateMode.FORCE_SEND);
     }
   }
 
@@ -382,7 +388,9 @@ public class BitcoinNetworkService extends AbstractService {
         // This method blocks until completed but fires events along the way
         peerGroup.downloadBlockChain();
 
-        log.debug("Blockchain downloaded");
+        log.debug("Blockchain downloaded.");
+
+        CoreEvents.fireBitcoinNetworkChangedEvent(BitcoinNetworkSummary.newNetworkReady(peerGroup.numConnectedPeers()));
 
       }
     });

@@ -2,13 +2,12 @@ package org.multibit.hd.ui.views.components;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import org.multibit.hd.core.dto.CoreMessageKey;
 import org.multibit.hd.core.dto.Recipient;
-import org.multibit.hd.core.config.Configurations;
-import org.multibit.hd.core.utils.BitcoinSymbol;
-import org.multibit.hd.core.utils.CurrencyUtils;
+import org.multibit.hd.core.exchanges.ExchangeKey;
 import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.i18n.Languages;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.utils.HtmlUtils;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountStyle;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
@@ -43,20 +42,50 @@ public class Labels {
 
 
   /**
-   * @param key    The resource key for the i18n message text
+   * @param key    The resource key for the language message text
    * @param values The data values for token replacement in the message text
    *
    * @return A new label with default styling
    */
   public static JLabel newLabel(MessageKey key, Object... values) {
-    return new JLabel(Languages.safeText(key, values));
+
+    JLabel label = new JLabel(Languages.safeText(key, values));
+
+    // Apply theme
+    label.setForeground(Themes.currentTheme.text());
+
+    return label;
+
   }
 
   /**
    * @return A new blank label with default styling
    */
   public static JLabel newBlankLabel() {
-    return new JLabel("");
+
+    JLabel label = new JLabel("");
+
+    // Apply theme
+    label.setForeground(Themes.currentTheme.text());
+
+    return label;
+
+  }
+
+  /**
+   * <p>A convenience method for creating a themed label with direct text. This is not internationalised.</p>
+   *
+   * @return A new value label with default styling for placing direct text
+   */
+  public static JLabel newValueLabel(String value) {
+
+    JLabel label = new JLabel(value);
+
+    // Apply theme
+    label.setForeground(Themes.currentTheme.text());
+
+    return label;
+
   }
 
   /**
@@ -71,6 +100,37 @@ public class Labels {
     // Font
     Font font = label.getFont().deriveFont(MultiBitUI.BALANCE_HEADER_LARGE_FONT_SIZE);
     label.setFont(font);
+
+    // Theme
+    label.setForeground(Themes.currentTheme.text());
+
+    return label;
+
+  }
+
+  /**
+   * <p>Create a new label with appropriate font/theme for a note. Interpret the contents of the text as Markdown for HTML translation.</p>
+   *
+   * @param keys   The message keys for each line referencing simple HTML (standard wrapping/breaking elements like {@literal <html></html>} and {@literal <br/>} will be provided)
+   * @param values The substitution values for each line if applicable
+   *
+   * @return A new label with HTML formatting to correctly render the line break and contents
+   */
+  public static JLabel newNoteLabel(CoreMessageKey[] keys, Object[][] values) {
+
+    String[] lines = new String[keys.length];
+    for (int i = 0; i < keys.length; i++) {
+      if (values.length > 0) {
+        // Substitution is required
+        lines[i] = Languages.safeText(keys[i], values[i]);
+      } else {
+        // Key only
+        lines[i] = Languages.safeText(keys[i]);
+      }
+    }
+
+    // Wrap in HTML to ensure LTR/RTL and line breaks are respected
+    JLabel label = new JLabel(HtmlUtils.localiseWithLineBreaks(lines));
 
     // Theme
     label.setForeground(Themes.currentTheme.text());
@@ -139,7 +199,7 @@ public class Labels {
     if (key.isPresent()) {
       label = newLabel(key.get(), values);
     } else {
-      label = new JLabel();
+      label = newBlankLabel();
     }
 
     decorateStatusLabel(label, status);
@@ -148,15 +208,15 @@ public class Labels {
   }
 
   public static void decorateStatusLabel(JLabel statusLabel, Optional<Boolean> status) {
+
     if (status.isPresent()) {
       if (status.get()) {
         AwesomeDecorator.bindIcon(AwesomeIcon.CHECK, statusLabel, true, MultiBitUI.NORMAL_ICON_SIZE);
       } else {
         AwesomeDecorator.bindIcon(AwesomeIcon.TIMES, statusLabel, true, MultiBitUI.NORMAL_ICON_SIZE);
       }
-    } else {
-      // No icon on the label
     }
+
   }
 
   /**
@@ -167,12 +227,19 @@ public class Labels {
   public static JLabel newImageLabel(Optional<BufferedImage> image) {
 
     if (image.isPresent()) {
-      return new JLabel(new ImageIcon(image.get()));
+      JLabel label = new JLabel(new ImageIcon(image.get()));
+
+      // Apply theme
+      label.setForeground(Themes.currentTheme.text());
+
+      return label;
     }
 
     // Fall back to a default image
-    JLabel label = new JLabel();
+    JLabel label = newBlankLabel();
+
     AwesomeDecorator.applyIcon(AwesomeIcon.USER, label, true, MultiBitUI.LARGE_ICON_SIZE);
+
     return label;
 
   }
@@ -200,11 +267,21 @@ public class Labels {
   /**
    * @param status True if the status is "good"
    *
-   * @return A new "verification" status label
+   * @return A new "verification" status label (confirms user has done something right)
    */
   public static JLabel newVerificationStatus(boolean status) {
 
     return newStatusLabel(MessageKey.VERIFICATION_STATUS, null, status);
+  }
+
+  /**
+   * @param status True if the status is "good"
+   *
+   * @return A new "validity" status label (confirms user has made a valid combination)
+   */
+  public static JLabel newErrorStatus(boolean status) {
+
+    return newStatusLabel(MessageKey.ERROR, null, status);
   }
 
   /**
@@ -244,24 +321,101 @@ public class Labels {
   }
 
   /**
-   * @param status True if the status is "good"
-   *
-   * @return A new "exchange rate status" message
-   */
-  public static JLabel newExchangeRateStatus(boolean status) {
-    if (status) {
-      return newStatusLabel(MessageKey.EXCHANGE_RATE_STATUS_OK, null, true);
-    } else {
-      return newStatusLabel(MessageKey.EXCHANGE_RATE_STATUS_WARN, null, false);
-    }
-  }
-
-  /**
-   * @return A new "Select language" label
+   * @return A new "select language" label
    */
   public static JLabel newSelectLanguageLabel() {
 
-    return new JLabel(Languages.safeText(MessageKey.DISPLAY_LANGUAGE));
+    JLabel label = Labels.newLabel(MessageKey.DISPLAY_LANGUAGE);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.GLOBE,
+      label,
+      true,
+      MultiBitUI.NORMAL_PLUS_ICON_SIZE
+    );
+
+    return label;
+  }
+
+  /**
+   * @return A new "select theme" label
+   */
+  public static JLabel newSelectThemeLabel() {
+
+    return Labels.newLabel(MessageKey.DISPLAY_THEME);
+
+  }
+
+  /**
+   * @return A new "select decimal separator" label
+   */
+  public static JLabel newSelectDecimalLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_DECIMAL_SEPARATOR);
+  }
+
+  /**
+   * @return A new "select grouping separator" label
+   */
+  public static JLabel newSelectGroupingLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_GROUPING_SEPARATOR);
+  }
+
+  /**
+   * @return A new "select local currency symbol" label
+   */
+  public static JLabel newLocalSymbolLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_LOCAL_SYMBOL);
+  }
+
+  /**
+   * @return A new "select local currency code" label
+   */
+  public static JLabel newLocalCurrencyLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_LOCAL_CURRENCY);
+  }
+
+  /**
+   * @return A new "enter access code" label (for API keys)
+   */
+  public static JLabel newApiKeyLabel() {
+
+    return Labels.newLabel(MessageKey.ENTER_ACCESS_CODE);
+  }
+
+  /**
+   * @return A new "select local Bitcoin symbol" label
+   */
+  public static JLabel newBitcoinSymbolLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_BITCOIN_SYMBOL);
+  }
+
+  /**
+   * @return A new "select placement" label
+   */
+  public static JLabel newPlacementLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_PLACEMENT);
+  }
+
+  /**
+   * @return A new "example" label
+   */
+  public static JLabel newExampleLabel() {
+
+    return Labels.newLabel(MessageKey.EXAMPLE);
+  }
+
+  /**
+   * @return A new "select exchange rate provider" label
+   */
+  public static JLabel newSelectExchangeRateProviderLabel() {
+
+    return Labels.newLabel(MessageKey.SELECT_EXCHANGE_RATE_PROVIDER);
   }
 
   /**
@@ -271,13 +425,13 @@ public class Labels {
    */
   public static JLabel newPanelCloseLabel(MouseAdapter mouseAdapter) {
 
-    JLabel panelCloseLabel = new JLabel();
+    JLabel panelCloseLabel = newBlankLabel();
 
     // Font
     Font panelCloseFont = panelCloseLabel.getFont().deriveFont(MultiBitUI.PANEL_CLOSE_FONT_SIZE);
     panelCloseLabel.setFont(panelCloseFont);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.TIMES, panelCloseLabel, true, 16);
+    AwesomeDecorator.bindIcon(AwesomeIcon.TIMES, panelCloseLabel, true, 16);
     panelCloseLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     panelCloseLabel.addMouseListener(mouseAdapter);
 
@@ -301,10 +455,11 @@ public class Labels {
 
     Preconditions.checkNotNull(style, "'style' must be present");
 
-    JLabel primaryBalanceLabel = new JLabel("0.00");
-    JLabel secondaryBalanceLabel = new JLabel("");
-    JLabel trailingSymbolLabel = new JLabel("");
-    JLabel exchangeLabel = new JLabel("");
+    JLabel leadingBalanceLabel = newBlankLabel();
+    JLabel primaryBalanceLabel = newBlankLabel();
+    JLabel secondaryBalanceLabel = newBlankLabel();
+    JLabel trailingSymbolLabel = newBlankLabel();
+    JLabel exchangeLabel = newBlankLabel();
 
     // Font
     final Font largeFont;
@@ -327,20 +482,22 @@ public class Labels {
         throw new IllegalStateException("Unknown style:" + style.name());
     }
 
+    leadingBalanceLabel.setFont(largeFont);
+
     primaryBalanceLabel.setFont(largeFont);
-    primaryBalanceLabel.setForeground(Color.RED);
+
     secondaryBalanceLabel.setFont(normalFont);
+
     trailingSymbolLabel.setFont(largeFont);
+
     exchangeLabel.setFont(normalFont);
 
     // Theme
-    primaryBalanceLabel.setForeground(Themes.currentTheme.text());
     secondaryBalanceLabel.setForeground(Themes.currentTheme.fadedText());
-    trailingSymbolLabel.setForeground(Themes.currentTheme.text());
-    exchangeLabel.setForeground(Themes.currentTheme.text());
 
     return new JLabel[]{
 
+      leadingBalanceLabel,
       primaryBalanceLabel,
       secondaryBalanceLabel,
       trailingSymbolLabel,
@@ -354,47 +511,6 @@ public class Labels {
    */
   public static JLabel newAmount() {
     return newLabel(MessageKey.AMOUNT);
-  }
-
-  /**
-   * @return A new "Bitcoin currency symbol" based on the current configuration
-   */
-  public static JLabel newBitcoinCurrencySymbol() {
-
-    BitcoinSymbol symbol = BitcoinSymbol.of(
-      Configurations
-        .currentConfiguration
-        .getBitcoinConfiguration()
-        .getBitcoinSymbol()
-    );
-
-    JLabel label = new JLabel();
-    if (BitcoinSymbol.ICON.equals(symbol)) {
-      AwesomeDecorator.applyIcon(
-        AwesomeIcon.BITCOIN,
-        label,
-        true,
-        MultiBitUI.NORMAL_ICON_SIZE
-      );
-    } else {
-      label.setText(symbol.getSymbol());
-    }
-
-    return label;
-
-  }
-
-  /**
-   * @return A new "local currency symbol" based on the current configuration
-   */
-  public static JLabel newLocalCurrencySymbol() {
-
-    JLabel label = new JLabel(CurrencyUtils.currentSymbol());
-
-    Font font = label.getFont().deriveFont(Font.BOLD, (float) MultiBitUI.NORMAL_ICON_SIZE);
-    label.setFont(font);
-
-    return label;
   }
 
   /**
@@ -447,10 +563,7 @@ public class Labels {
    */
   public static JLabel newCurrentExchangeName() {
 
-    String exchangeName = Configurations
-      .currentConfiguration
-      .getBitcoinConfiguration()
-      .getExchangeName();
+    String exchangeName = ExchangeKey.current().getExchangeName();
 
     return newLabel(MessageKey.EXCHANGE_RATE_PROVIDER, exchangeName);
   }
@@ -488,6 +601,7 @@ public class Labels {
     return newLabel(MessageKey.TRANSACTION_FEE);
   }
 
+
   /**
    * @return A new "circle" label
    */
@@ -499,7 +613,6 @@ public class Labels {
 
     return label;
   }
-
 
   /**
    * @param developerFee The developer fee in satoshis
@@ -532,10 +645,87 @@ public class Labels {
   }
 
   /**
+   * @return A new "description" label
+   */
+  public static JLabel newDescription() {
+    return newLabel(MessageKey.DESCRIPTION);
+  }
+
+  /**
+   * @return A new "contact name" label
+   */
+  public static JLabel newName() {
+    return newLabel(MessageKey.NAME);
+  }
+
+  /**
+   * @return A new "contact email" label
+   */
+  public static JLabel newEmailAddress() {
+    return newLabel(MessageKey.EMAIL_ADDRESS);
+  }
+
+  /**
+   * @return A new "contact Bitcoin address" label
+   */
+  public static JLabel newBitcoinAddress() {
+    return newLabel(MessageKey.BITCOIN_ADDRESS);
+  }
+
+  /**
+   * @return A new "contact extended public key" label
+   */
+  public static JLabel newExtendedPublicKey() {
+    return newLabel(MessageKey.EXTENDED_PUBLIC_KEY);
+  }
+
+  /**
+   * @return A new "names" label
+   */
+  public static JLabel newNames() {
+    return newLabel(MessageKey.NAMES);
+  }
+
+  /**
+   * @return A new "tags" label
+   */
+  public static JLabel newTags() {
+    return newLabel(MessageKey.TAGS);
+  }
+
+  /**
+   * @return A new "QR code label" message for use with receiving addresses
+   */
+  public static JLabel newQRCodeLabelLabel() {
+    return newLabel(MessageKey.QR_CODE_LABEL_LABEL);
+  }
+
+  /**
+   * @return a new "select alert sound" for sound settings
+   */
+  public static JLabel newSelectAlertSound() {
+    return newLabel(MessageKey.ALERT_SOUND);
+  }
+
+  /**
+   * @return a new "select receive sound" for sound settings
+   */
+  public static JLabel newSelectReceiveSound() {
+    return newLabel(MessageKey.RECEIVE_SOUND);
+  }
+
+  /**
    * @return A new "notes" message
    */
   public static JLabel newNotes() {
     return newLabel(MessageKey.NOTES);
+  }
+
+  /**
+   * @return A new "multi edit note" label
+   */
+  public static JLabel newMultiEditNote() {
+    return newLabel(MessageKey.MULTI_EDIT_NOTE);
   }
 
   /**
@@ -565,16 +755,73 @@ public class Labels {
   }
 
   /**
+   * @return A new "debugger warning" note
+   */
+  public static JLabel newDebuggerWarningNote() {
+
+    JLabel label = newNoteLabel(new CoreMessageKey[]{
+      CoreMessageKey.DEBUGGER_ATTACHED,
+      CoreMessageKey.SECURITY_ADVICE
+    }, new Object[][]{});
+
+    // Allow for danger theme
+    label.setForeground(Themes.currentTheme.dangerAlertText());
+
+    return label;
+
+  }
+
+  /**
+   * @return A new "language change" note
+   */
+  public static JLabel newLanguageChangeNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.LANGUAGE_CHANGE_NOTE_1
+    }, new Object[][]{});
+
+  }
+
+  /**
+   * @return A new "theme change" note
+   */
+  public static JLabel newThemeChangeNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.THEME_CHANGE_NOTE_1
+    }, new Object[][]{});
+
+  }
+
+  /**
+   * @return A new "sound change" note
+   */
+  public static JLabel newSoundChangeNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.SOUND_CHANGE_NOTE_1
+    }, new Object[][]{});
+
+  }
+
+  /**
    * @return A new "seed warning" note
    */
   public static JLabel newSeedWarningNote() {
 
-    return newNoteLabel(new MessageKey[]{
+    JLabel label = newNoteLabel(new MessageKey[]{
       MessageKey.SEED_WARNING_NOTE_1,
       MessageKey.SEED_WARNING_NOTE_2,
       MessageKey.SEED_WARNING_NOTE_3,
       MessageKey.SEED_WARNING_NOTE_4,
+      MessageKey.SEED_WARNING_NOTE_5,
     }, new Object[][]{});
+
+    // Allow for danger theme
+    label.setForeground(Themes.currentTheme.dangerAlertText());
+
+    return label;
+
   }
 
   /**
@@ -610,7 +857,8 @@ public class Labels {
     return newNoteLabel(new MessageKey[]{
       MessageKey.RESTORE_TIMESTAMP_NOTE_1,
       MessageKey.RESTORE_TIMESTAMP_NOTE_2,
-      MessageKey.RESTORE_TIMESTAMP_NOTE_3
+      MessageKey.RESTORE_TIMESTAMP_NOTE_3,
+      MessageKey.RESTORE_TIMESTAMP_NOTE_4,
     }, new Object[][]{});
   }
 
@@ -665,4 +913,37 @@ public class Labels {
 
   }
 
+  /**
+   * @return A new "password" note (password wizard)
+   */
+  public static JLabel newPasswordNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.PASSWORD_NOTE_1,
+      MessageKey.PASSWORD_NOTE_2
+    }, new Object[][]{});
+
+  }
+
+  /**
+   * @return A new "Bitcoin settings" note
+   */
+  public static JLabel newBitcoinSettingsNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.BITCOIN_SETTINGS_NOTE_1
+    }, new Object[][]{});
+
+  }
+
+  /**
+   * @return A new "exchange settings" note
+   */
+  public static JLabel newExchangeSettingsNote() {
+
+    return newNoteLabel(new MessageKey[]{
+      MessageKey.EXCHANGE_SETTINGS_NOTE_1
+    }, new Object[][]{});
+
+  }
 }

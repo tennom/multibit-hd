@@ -43,7 +43,7 @@ public class FormattedDecimalField extends JFormattedTextField {
 
     Preconditions.checkState(decimalPlaces >= 0 && decimalPlaces < 15, "'decimalPlaces' must be in range [0,15)");
 
-    setInputVerifier(new ThemedDecimalInputVerifier(min, max));
+    setInputVerifier(new ThemeAwareDecimalInputVerifier(min, max));
 
     setBackground(Themes.currentTheme.dataEntryBackground());
 
@@ -64,8 +64,8 @@ public class FormattedDecimalField extends JFormattedTextField {
       editPattern = editPattern.substring(0, decimalEditIndex);
     }
     // Adjust edit/display formats to the current configuration
-    char groupingSeparator = Configurations.currentConfiguration.getI18NConfiguration().getGroupingSeparator();
-    char decimalSeparator = Configurations.currentConfiguration.getI18NConfiguration().getDecimalSeparator();
+    char groupingSeparator = Configurations.currentConfiguration.getBitcoinConfiguration().getGroupingSeparator();
+    char decimalSeparator = Configurations.currentConfiguration.getBitcoinConfiguration().getDecimalSeparator();
 
     // Use locale decimal formatting then override with current configuration
     DecimalFormatSymbols symbols = new DecimalFormatSymbols();

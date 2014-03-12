@@ -1,5 +1,6 @@
 package org.multibit.hd.ui.views.components.display_amount;
 
+import com.google.common.base.Optional;
 import org.joda.money.BigMoney;
 import org.multibit.hd.core.utils.CurrencyUtils;
 import org.multibit.hd.ui.models.Model;
@@ -23,7 +24,10 @@ public class DisplayAmountModel implements Model<DisplayAmountModel> {
   private BigInteger satoshis = BigInteger.ZERO;
   private BigMoney localAmount = CurrencyUtils.ZERO;
 
-  private boolean localAmountVisible = true;
+  // Default to Bitcoin only (exchanges are an optional feature)
+  private boolean localAmountVisible = false;
+  
+  private Optional<String> rateProvider = Optional.absent();
 
   /**
    * @param style The display amount style
@@ -80,5 +84,21 @@ public class DisplayAmountModel implements Model<DisplayAmountModel> {
 
   public void setLocalAmountVisible(boolean localAmountVisible) {
     this.localAmountVisible = localAmountVisible;
+  }
+
+  /**
+   * @return The rate provider (e.g. "Bitstamp" or absent if no provider is available)
+   */
+  public Optional<String> getRateProvider() {
+    return rateProvider;
+  }
+
+  public void setRateProvider(Optional<String> rateProvider) {
+
+    this.rateProvider = rateProvider;
+
+    // Update the local amount visibility
+    localAmountVisible = rateProvider.isPresent();
+
   }
 }

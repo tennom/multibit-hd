@@ -4,8 +4,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import net.miginfocom.swing.MigLayout;
 import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.i18n.Languages;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
 import org.multibit.hd.ui.views.components.panels.LightBoxPanel;
 import org.multibit.hd.ui.views.components.panels.PanelDecorator;
@@ -15,6 +15,7 @@ import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.themes.Themes;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -35,7 +36,64 @@ public class Panels {
   public static JFrame frame;
 
   private static Optional<LightBoxPanel> lightBoxPanel = Optional.absent();
+
   private static Optional<LightBoxPanel> lightBoxPopoverPanel = Optional.absent();
+
+  /**
+   * <p>A default MiG layout constraint with:</p>
+   * <ul>
+   * <li>Zero insets</li>
+   * <li>Fills all available space (X and Y)</li>
+   * <li>Handles left-to-right and right-to-left presentation automatically</li>
+   * </ul>
+   *
+   * @return A default MiG layout constraint that fills all X and Y with RTL appended
+   */
+  public static String migXYLayout() {
+    return migLayout("fill,insets 0");
+  }
+
+  /**
+   * <p>A default MiG layout constraint with:</p>
+   * <ul>
+   * <li>Zero insets</li>
+   * <li>Fills all available space (X only)</li>
+   * <li>Handles left-to-right and right-to-left presentation automatically</li>
+   * </ul>
+   *
+   * @return A default MiG layout constraint that fills all X with RTL appended
+   */
+  public static String migXLayout() {
+    return migLayout("fillx,insets 0");
+  }
+
+  /**
+   * <p>A non-standard MiG layout constraint with:</p>
+   * <ul>
+   * <li>Optional "fill", "insets", "hidemode" etc</li>
+   * <li>Handles left-to-right and right-to-left presentation automatically</li>
+   * </ul>
+   *
+   * @param layout Any of the usual MiG layout constraints except RTL (e.g. "fillx,insets 1 2 3 4")
+   *
+   * @return The MiG layout constraint with RTL handling appended
+   */
+  public static String migLayout(String layout) {
+    return layout + (Languages.isLeftToRight() ? "" : ",rtl");
+  }
+
+  /**
+   * @return A simple theme-aware panel with a single cell MigLayout that fills all X and Y
+   */
+  public static JPanel newPanel() {
+
+    return Panels.newPanel(new MigLayout(
+      migXYLayout(), // Layout
+      "[]", // Columns
+      "[]" // Rows
+    ));
+
+  }
 
   /**
    * @param layout The layout manager for the panel (typically MigLayout)
@@ -49,23 +107,11 @@ public class Panels {
     // Theme
     panel.setBackground(Themes.currentTheme.detailPanelBackground());
 
+    // Force transparency
+    panel.setOpaque(false);
+
     // Ensure LTR and RTL is detected by the layout
     panel.applyComponentOrientation(Languages.currentComponentOrientation());
-
-    return panel;
-
-  }
-
-  /**
-   * @return A simple theme-aware panel with a single cell MigLayout
-   */
-  public static JPanel newPanel() {
-
-    JPanel panel = Panels.newPanel(new MigLayout(
-      "fill,insets 0", // Layout
-      "[]", // Columns
-      "[]" // Rows
-    ));
 
     return panel;
 
@@ -77,10 +123,14 @@ public class Panels {
   public static JPanel newRoundedPanel() {
 
     JPanel panel = new RoundedPanel(new MigLayout(
-      "fill,insets 0", // Layout
+      Panels.migXLayout(),
       "[]", // Columns
       "[]" // Rows
     ));
+
+    // Theme
+    panel.setBackground(Themes.currentTheme.detailPanelBackground());
+    panel.setForeground(Themes.currentTheme.fadedText());
 
     return panel;
 
@@ -103,12 +153,13 @@ public class Panels {
     BackgroundPanel panel = new BackgroundPanel(image, BackgroundPanel.ACTUAL);
 
     panel.setLayout(new MigLayout(
-      "fill,insets 0", // Layout
+      Panels.migXLayout(),
       "[]", // Columns
       "[]" // Rows
     ));
     panel.setAlpha(MultiBitUI.DETAIL_PANEL_BACKGROUND_ALPHA);
     panel.setPaint(Themes.currentTheme.detailPanelBackground());
+    panel.setBackground(Themes.currentTheme.detailPanelBackground());
 
     return panel;
 
@@ -123,6 +174,8 @@ public class Panels {
 
     Preconditions.checkState(!lightBoxPanel.isPresent(), "Light box should never be called twice");
 
+    allowFocus(Panels.frame, false);
+
     lightBoxPanel = Optional.of(new LightBoxPanel(panel, JLayeredPane.MODAL_LAYER));
 
   }
@@ -136,6 +189,8 @@ public class Panels {
       lightBoxPanel.get().close();
     }
 
+    allowFocus(Panels.frame, true);
+
     lightBoxPanel = Optional.absent();
 
   }
@@ -147,7 +202,7 @@ public class Panels {
    */
   public synchronized static void showLightBoxPopover(JPanel panel) {
 
-//    Preconditions.checkState(lightBoxPanel.isPresent(), "LightBoxPopover should not be called unless a light box is showing");
+    Preconditions.checkState(lightBoxPanel.isPresent(), "LightBoxPopover should not be called unless a light box is showing");
     Preconditions.checkState(!lightBoxPopoverPanel.isPresent(), "LightBoxPopover should never be called twice");
 
     lightBoxPopoverPanel = Optional.of(new LightBoxPanel(panel, JLayeredPane.DRAG_LAYER));
@@ -165,99 +220,6 @@ public class Panels {
 
     lightBoxPopoverPanel = Optional.absent();
 
-  }
-
-  /**
-   * <p>A "broadcast status" panel provides a means of observing broadcast activity</p>
-   *
-   * @return A new broadcast status panel
-   */
-  public static JPanel newBroadcastStatus() {
-
-    JPanel panel = Panels.newPanel();
-
-    JLabel label = Labels.newStatusLabel(MessageKey.BROADCAST_STATUS, null, true);
-
-    panel.add(label);
-
-    return panel;
-  }
-
-  /**
-   * <p>A "relay status" panel provides a means of observing relay activity</p>
-   *
-   * @return A new relay status panel
-   */
-  public static JPanel newRelayStatus() {
-
-    JPanel panel = Panels.newPanel();
-
-    JLabel label = Labels.newStatusLabel(MessageKey.RELAY_STATUS, null, true);
-
-    panel.add(label);
-
-    return panel;
-  }
-
-  /**
-   * <p>A "confirmation count" panel provides a means of observing confirmations</p>
-   *
-   * @return A new confirmation count status panel
-   */
-  public static JPanel newConfirmationCountStatus(String count, boolean status) {
-
-    JPanel panel = Panels.newPanel();
-
-    JLabel label = Labels.newLabel(MessageKey.CONFIRMATION_STATUS, new Object[]{count}, status);
-
-    panel.add(label);
-
-    return panel;
-  }
-
-  /**
-   * <p>A "verification status" panel shows the user that they have entered their data correctly</p>
-   *
-   * @return A new "verification status" panel (not visible by default)
-   */
-  public static JPanel newVerificationStatus() {
-
-    JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
-      "[grow]", // Columns
-      "[]" // Rows
-    ));
-
-    // Add to the panel
-    panel.add(Labels.newVerificationStatus(true), "align center");
-
-    // Typical use case requires this to be invisible
-    panel.setVisible(false);
-
-    return panel;
-  }
-
-
-  /**
-   * <p>A "language selector" panel provides a means of changing the display language</p>
-   *
-   * @param listener The action listener
-   *
-   * @return A new "language selector" panel
-   */
-  public static JPanel newLanguageSelector(ActionListener listener) {
-
-    JPanel panel = Panels.newPanel();
-
-    JLabel label = Labels.newLabel(MessageKey.SELECT_LANGUAGE);
-    AwesomeDecorator.applyIcon(AwesomeIcon.GLOBE, label, true, MultiBitUI.LARGE_ICON_SIZE);
-
-    JComboBox<String> languages = ComboBoxes.newLanguagesComboBox(listener);
-
-    panel.add(label);
-    panel.add(languages, "wrap");
-
-    return panel;
   }
 
   /**
@@ -313,42 +275,6 @@ public class Panels {
   }
 
   /**
-   * <p>A "restore wallet selector" panel provides a means of choosing how a wallet is to be restored</p>
-   *
-   * @param listener          The action listener
-   * @param backupCommand     The "from backup" command name
-   * @param seedPhraseCommand The "from seed phrase" command name
-   *
-   * @return A new "restore wallet" panel
-   */
-  public static JPanel newRestoreWalletSelector(
-    ActionListener listener,
-    String backupCommand,
-    String seedPhraseCommand
-  ) {
-
-    JPanel panel = Panels.newPanel();
-
-    JRadioButton radio1 = RadioButtons.newRadioButton(listener, MessageKey.RESTORE_FROM_BACKUP);
-    radio1.setSelected(true);
-    radio1.setActionCommand(backupCommand);
-
-    JRadioButton radio2 = RadioButtons.newRadioButton(listener, MessageKey.RESTORE_FROM_SEED_PHRASE);
-    radio2.setActionCommand(seedPhraseCommand);
-
-    // Wallet selection is mutually exclusive
-    ButtonGroup group = new ButtonGroup();
-    group.add(radio1);
-    group.add(radio2);
-
-    // Add to the panel
-    panel.add(radio1, "wrap");
-    panel.add(radio2, "wrap");
-
-    return panel;
-  }
-
-  /**
    * <p>A "confirm seed phrase" panel displays the instructions to enter the seed phrase from a piece of paper</p>
    *
    * @return A new "confirm seed phrase" panel
@@ -356,7 +282,7 @@ public class Panels {
   public static JPanel newConfirmSeedPhrase() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXYLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -375,7 +301,7 @@ public class Panels {
   public static JPanel newSeedPhraseWarning() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -389,20 +315,43 @@ public class Panels {
   }
 
   /**
-   * <p>A "restore select method" panel displays the restore options</p>
+   * <p>A "debugger warning" panel displays instructions to the user about a debugger being attached</p>
    *
-   * @return A new "restore select method" panel
+   * @return A new "debugger warning" panel
    */
-  public static JPanel newRestoreSelectMethod() {
+  public static JPanel newDebuggerWarning() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
 
+    PanelDecorator.applyDangerFadedTheme(panel);
+
     // Add to the panel
-    panel.add(Labels.newRestoreSelectMethodNote(), "push");
+    panel.add(Labels.newDebuggerWarningNote(), "push");
+
+    return panel;
+  }
+
+  /**
+   * <p>A "language change" panel displays instructions to the user about a language change</p>
+   *
+   * @return A new "language change" panel
+   */
+  public static JPanel newLanguageChange() {
+
+    JPanel panel = Panels.newPanel(new MigLayout(
+      Panels.migXLayout(),
+      "[grow]", // Columns
+      "[]" // Rows
+    ));
+
+    PanelDecorator.applySuccessFadedTheme(panel);
+
+    // Add to the panel
+    panel.add(Labels.newLanguageChangeNote(), "push");
 
     return panel;
   }
@@ -415,7 +364,7 @@ public class Panels {
   public static JPanel newRestoreFromBackup() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -434,7 +383,7 @@ public class Panels {
   public static JPanel newRestoreFromSeedPhrase() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -453,7 +402,7 @@ public class Panels {
   public static JPanel newRestoreFromTimestamp() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -472,26 +421,7 @@ public class Panels {
   public static JPanel newSelectBackupDirectory() {
 
     JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
-      "[grow]", // Columns
-      "[]" // Rows
-    ));
-
-    // Add to the panel
-    panel.add(Labels.newSelectBackupLocationNote(), "push");
-
-    return panel;
-  }
-
-  /**
-   * <p>A "select backup directory" panel displays the instructions to choose an appropriate backup directory</p>
-   *
-   * @return A new "select backup directory" panel
-   */
-  public static JPanel newContactDetail() {
-
-    JPanel panel = Panels.newPanel(new MigLayout(
-      "fillx,insets 0", // Layout
+      Panels.migXLayout(),
       "[grow]", // Columns
       "[]" // Rows
     ));
@@ -514,4 +444,40 @@ public class Panels {
     panel.repaint();
 
   }
+
+  /**
+   * <p>Recursive method to enable or disable the focus on all components in the given container</p>
+   * <p>Filters components that cannot have focus by design (e.g. JLabel)</p>
+   *
+   * @param component  The component
+   * @param allowFocus True if the components should be able to gain focus
+   */
+  private static void allowFocus(Component component, boolean allowFocus) {
+
+    // Limit the focus change to those components that could grab it
+    if (component instanceof AbstractButton) {
+      component.setFocusable(allowFocus);
+    }
+    if (component instanceof JComboBox) {
+      component.setFocusable(allowFocus);
+    }
+    if (component instanceof JTree) {
+      component.setFocusable(allowFocus);
+    }
+    if (component instanceof JTextComponent) {
+      component.setFocusable(allowFocus);
+    }
+    if (component instanceof JTable) {
+      component.setFocusable(allowFocus);
+    }
+
+    // Recursive search
+    if (component instanceof Container) {
+      for (Component child : ((Container) component).getComponents()) {
+        allowFocus(child, allowFocus);
+      }
+
+    }
+  }
+
 }

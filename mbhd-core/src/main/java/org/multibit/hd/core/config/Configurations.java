@@ -3,6 +3,7 @@ package org.multibit.hd.core.config;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
+import org.multibit.hd.core.events.CoreEvents;
 import org.multibit.hd.core.exceptions.CoreException;
 import org.multibit.hd.core.managers.InstallationManager;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,7 +26,7 @@ import java.util.Properties;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class Configurations {
 
@@ -35,18 +37,23 @@ public class Configurations {
 
   // Location of current wallet directory (may be empty)
   public static final String APP_CURRENT_WALLET_FILENAME = "app.current-wallet-filename";
+  public static final String APP_CURRENT_THEME = "app.current-theme";
 
+  // Sound
+  public static final String SOUND_ALERT = "app.alert";
+  public static final String SOUND_RECEIVE = "app.receive";
 
   // Bitcoin
   public static final String BITCOIN_SYMBOL = "bitcoin.symbol";
+  public static final String BITCOIN_DECIMAL_SEPARATOR = "bitcoin.decimal-separator";
+  public static final String BITCOIN_GROUPING_SEPARATOR = "bitcoin.grouping-separator";
+  public static final String BITCOIN_IS_CURRENCY_PREFIXED = "bitcoin.is-prefixed";
+  public static final String BITCOIN_LOCAL_DECIMAL_PLACES = "bitcoin.local-decimal-places";
+  public static final String BITCOIN_LOCAL_CURRENCY_UNIT = "bitcoin.local-currency-unit";
+  public static final String BITCOIN_LOCAL_CURRENCY_SYMBOL = "bitcoin.local-currency-symbol";
 
-  // Internationalisation (i18n)
-  public static final String I18N_LOCALE = "i18n.locale";
-  public static final String I18N_DECIMAL_SEPARATOR = "i18n.decimal-separator";
-  public static final String I18N_GROUPING_SEPARATOR = "i18n.grouping-separator";
-  public static final String I18N_IS_CURRENCY_PREFIXED = "i18n.is-prefixed";
-  public static final String I18N_LOCAL_DECIMAL_PLACES = "i18n.local-decimal-places";
-  public static final String I18N_LOCAL_CURRENCY_UNIT = "i18n.local-currency-unit";
+  // Language
+  public static final String LANGUAGE_LOCALE = "language.locale";
 
   // Logging
   public static final String LOGGING = "logging";
@@ -54,7 +61,6 @@ public class Configurations {
   public static final String LOGGING_FILE = LOGGING + ".file";
   public static final String LOGGING_ARCHIVE = LOGGING + ".archive";
   public static final String LOGGING_PACKAGE_PREFIX = LOGGING + ".package.";
-
 
   /**
    * The current runtime configuration (preserved across soft restarts)
@@ -79,19 +85,24 @@ public class Configurations {
 
     Properties properties = new Properties();
 
+    // Language
+    properties.put(LANGUAGE_LOCALE, "en_GB");
+
     // Application
     properties.put(APP_VERSION, "0.0.1");
+    properties.put(APP_CURRENT_THEME, "LIGHT");
+
+    // Sound
+    properties.put(SOUND_ALERT, "true");
+    properties.put(SOUND_RECEIVE, "true");
 
     // Bitcoin
-    properties.put(BITCOIN_SYMBOL, "ICON");
-
-    // Localisation
-    properties.put(I18N_LOCALE, "en_gb");
-    properties.put(I18N_DECIMAL_SEPARATOR, ".");
-    properties.put(I18N_GROUPING_SEPARATOR, ",");
-    properties.put(I18N_IS_CURRENCY_PREFIXED, "true");
-    properties.put(I18N_LOCAL_DECIMAL_PLACES, "4");
-    properties.put(I18N_LOCAL_CURRENCY_UNIT, "GBP");
+    properties.put(BITCOIN_SYMBOL, "MICON");
+    properties.put(BITCOIN_DECIMAL_SEPARATOR, ".");
+    properties.put(BITCOIN_GROUPING_SEPARATOR, ",");
+    properties.put(BITCOIN_IS_CURRENCY_PREFIXED, "true");
+    properties.put(BITCOIN_LOCAL_DECIMAL_PLACES, "2");
+    properties.put(BITCOIN_LOCAL_CURRENCY_UNIT, "USD");
 
     // Logging
     properties.put(LOGGING_LEVEL, "warn");
@@ -101,6 +112,27 @@ public class Configurations {
     properties.put(LOGGING_PACKAGE_PREFIX + "org.multibit", "debug");
 
     return new ConfigurationReadAdapter(properties).adapt();
+
+  }
+
+  /**
+   * <p>Handle the process of switching to a new configuration</p>
+   *
+   * @param newConfiguration The new configuration
+   */
+  public static synchronized void switchConfiguration(Configuration newConfiguration) {
+
+    // Keep track of the previous configuration
+    previousConfiguration = currentConfiguration;
+
+    // Set the replacement
+    currentConfiguration = newConfiguration;
+
+    // Update any JVM classes
+    Locale.setDefault(currentConfiguration.getLocale());
+
+    // Notify interested parties
+    CoreEvents.fireConfigurationChangedEvent();
 
   }
 
@@ -222,5 +254,4 @@ public class Configurations {
 
     }
   }
-
 }

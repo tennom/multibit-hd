@@ -1,6 +1,7 @@
 package org.multibit.hd.ui.views.components.select_contact;
 
 import org.multibit.hd.core.dto.Recipient;
+import org.multibit.hd.ui.views.components.borders.TextBubbleBorder;
 import org.multibit.hd.ui.views.themes.Themes;
 
 import javax.swing.*;
@@ -26,7 +27,12 @@ public class RecipientComboBoxEditor implements ComboBoxEditor {
 
     // Use a modified text field with a workaround
     editor = new ComboBoxTextField("", 0);
+
+    // Apply theme
     editor.setBackground(Themes.currentTheme.dataEntryBackground());
+
+    // Apply rounded corners for consistent LaF
+    editor.setBorder(new TextBubbleBorder(Themes.currentTheme.dataEntryBorder()));
 
   }
 
@@ -44,8 +50,9 @@ public class RecipientComboBoxEditor implements ComboBoxEditor {
     String editorText;
 
     if (anObject instanceof String) {
-      // User is typing in the editor
+      // User is typing or has pasted in the editor
       editorText = (String) anObject;
+      recipient = null;
     } else {
       // User has selected from the list
       Recipient recipient = (Recipient) anObject;
@@ -71,10 +78,11 @@ public class RecipientComboBoxEditor implements ComboBoxEditor {
   }
 
   public Object getItem() {
-
-    if (recipient != null) {
+    if (recipient != null &&recipient.getContact().isPresent()) {
+      // There is a hit on a contact
       return recipient;
     } else {
+      // return the editor contents, which may be a pasted address
       return editor.getText();
     }
   }

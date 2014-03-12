@@ -5,7 +5,6 @@ import org.joda.money.BigMoney;
 import org.multibit.hd.core.dto.RAGStatus;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.models.AlertModel;
-import org.multibit.hd.ui.models.HardwareWalletModel;
 import org.multibit.hd.ui.views.screens.Screen;
 import org.multibit.hd.ui.views.wizards.WizardButton;
 import org.slf4j.Logger;
@@ -63,6 +62,13 @@ public class ViewEvents {
   }
 
   /**
+   * <p>Broadcast a new "theme changed" event</p>
+   */
+  public static void fireThemeChangedEvent() {
+    CoreServices.uiEventBus.post(new ThemeChangedEvent());
+  }
+
+  /**
    * <p>Broadcast a new "balance changed" event</p>
    *
    * @param satoshis     The current balance in satoshis
@@ -72,7 +78,7 @@ public class ViewEvents {
   public static void fireBalanceChangedEvent(
     BigInteger satoshis,
     BigMoney localBalance,
-    String rateProvider
+    Optional<String> rateProvider
   ) {
 
     log.trace("Firing 'balance changed' event");
@@ -125,6 +131,14 @@ public class ViewEvents {
   }
 
   /**
+   * <p>Broadcast a new "wallet detail changed" event</p>
+   */
+  public static void fireWalletDetailChangedEvent(WalletDetail walletDetail) {
+    log.trace("Firing 'walletDetailChanged' event");
+    CoreServices.uiEventBus.post(new WalletDetailChangedEvent(walletDetail));
+  }
+
+  /**
    * <p>Broadcast a new "wizard button enabled" event</p>
    *
    * @param panelName    The panel name to which this applies
@@ -138,25 +152,25 @@ public class ViewEvents {
   }
 
   /**
-   * <p>Broadcast a new "wizard component model changed" event</p>
+   * <p>Broadcast a new "wizard hide" event</p>
    *
-   * @param panelName      The panel name to which this applies
-   * @param componentModel The component model
+   * @param panelName   The unique panel name to which this applies (use screen name for detail screens)
+   * @param wizardModel The wizard model containing all the user data
    */
-  public static void fireWizardComponentModelChangedEvent(String panelName, Optional componentModel) {
-    log.trace("Firing 'wizard component model changed' event");
-    CoreServices.uiEventBus.post(new WizardComponentModelChangedEvent(panelName, componentModel));
+  public static void fireWizardHideEvent(String panelName, WizardModel wizardModel) {
+    log.trace("Firing 'wizard hide' event");
+    CoreServices.uiEventBus.post(new WizardHideEvent(panelName, wizardModel));
   }
 
   /**
-   * <p>Broadcast a new "detail view component model changed" event</p>
+   * <p>Broadcast a new "component changed" event</p>
    *
-   * @param detailView      The detail view to which this applies
-   * @param componentModel The component model
+   * @param panelName      The unique panel name to which this applies (use screen name for detail screens)
+   * @param componentModel The component model containing the change (absent if the component has no model)
    */
-  public static void fireDetailComponentModelChangedEvent(Screen detailView, Optional componentModel) {
-    log.trace("Firing 'detail view component model changed' event");
-    CoreServices.uiEventBus.post(new ScreenComponentModelChangedEvent(detailView, componentModel));
+  public static void fireComponentChangedEvent(String panelName, Optional componentModel) {
+    log.trace("Firing 'component changed' event");
+    CoreServices.uiEventBus.post(new ComponentChangedEvent(panelName, componentModel));
   }
 
   /**

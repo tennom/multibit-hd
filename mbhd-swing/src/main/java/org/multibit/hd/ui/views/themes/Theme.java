@@ -39,6 +39,12 @@ public interface Theme {
   Color readOnlyBorder();
 
   /**
+   *
+   * @return The background color for read only combo box (Nimbus mangles this value considerably)
+   */
+  Color readOnlyComboBox();
+
+  /**
    * @return The background colour for data handling elements (like text areas, tree views etc)
    */
   Color dataEntryBackground();
@@ -52,6 +58,11 @@ public interface Theme {
    * @return The background colour for data handling elements (like text areas, tree views etc) with invalid data
    */
   Color invalidDataEntryBackground();
+
+  /**
+   * @return The background colour for a button to match the overall theme (needs to contrast with the detail panel backgrond)
+   */
+  Color buttonBackground();
 
   /**
    * @return The normal font colour for the theme
@@ -72,6 +83,11 @@ public interface Theme {
    * @return A faded version of the inverse font colour for the theme (to avoid clashing with panel backgrounds)
    */
   Color inverseFadedText();
+
+  /**
+   * @return The font colour for a button to match the overall theme
+   */
+  Color buttonText();
 
   /**
    * @return The background colour of a danger alert
@@ -142,4 +158,37 @@ public interface Theme {
    * @return The text of an info alert
    */
   Color infoAlertText();
+
+  /**
+   * @return The background colour of a pending alert
+   */
+  Color pendingAlertBackground();
+
+  /**
+   * @return The background colour of a pending alert with fading (matches button theme)
+   */
+  Color pendingAlertFadedBackground();
+
+  /**
+   * @return The border of a pending alert
+   */
+  Color pendingAlertBorder();
+
+  /**
+   * @return The text of a pending alert
+   */
+  Color pendingAlertText();
+
+  /**
+   *
+   * @return The text of a credit entry in a payment screen (usually green or black)
+   */
+  Color creditText();
+
+  /**
+   *
+   * @return The text of a debit entry in a payment screen (usually red)
+   */
+  Color debitText();
+
 }

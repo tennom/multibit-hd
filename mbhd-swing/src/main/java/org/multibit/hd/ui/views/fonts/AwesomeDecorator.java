@@ -3,7 +3,7 @@ package org.multibit.hd.ui.views.fonts;
 import com.google.common.base.Preconditions;
 import org.multibit.hd.ui.MultiBitUI;
 import org.multibit.hd.ui.exceptions.UIException;
-import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.ui.languages.Languages;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.io.InputStream;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class AwesomeDecorator {
 
@@ -31,7 +31,7 @@ public class AwesomeDecorator {
 
       Preconditions.checkNotNull(AWESOME_FONT, "'awesome' font not loaded");
 
-      AWESOME_FONT = AWESOME_FONT.deriveFont(MultiBitUI.NORMAL_ICON_SIZE);
+      AWESOME_FONT = AWESOME_FONT.deriveFont(Font.PLAIN, MultiBitUI.NORMAL_ICON_SIZE);
 
     } catch (FontFormatException | IOException e) {
       throw new UIException(e);
@@ -68,7 +68,9 @@ public class AwesomeDecorator {
    */
   public static void applyIcon(AwesomeIcon icon, JLabel label, boolean leading, int size) {
 
+    // Use an independent label to get the correct font size
     JLabel iconLabel = new JLabel();
+
     iconLabel.setFont(iconLabel.getFont().deriveFont((float) size));
     iconLabel.setForeground(label.getForeground());
 
@@ -116,18 +118,20 @@ public class AwesomeDecorator {
   public static void applyIcon(AwesomeIcon icon, JButton button, boolean leading, int size) {
     applyIcon(icon, button, leading, JLabel.CENTER, size);
   }
+
   /**
    * <p>Apply an icon to a button. Both icon states (enabled/disabled) will be added.</p>
    * <p>The icon will use the font and color from the button, but <strong>will not</strong> reflect any subsequent updates.</p>
    *
-   * @param icon    The icon reference
-   * @param button  The button
-   * @param leading True if the icon comes before the text in the reading direction (LTR and RTL is handled automatically)
+   * @param icon              The icon reference
+   * @param button            The button
+   * @param leading           True if the icon comes before the text in the reading direction (LTR and RTL is handled automatically)
    * @param verticalAlignment One of JLabel.TOP, JLabel.CENTER, JLabel.BOTTOM The position of the text relative to the icon
-   * @param size    The icon size (font metrics)
+   * @param size              The icon size (font metrics)
    */
 
   public static void applyIcon(AwesomeIcon icon, JButton button, boolean leading, int verticalAlignment, int size) {
+
     JButton iconButton = new JButton();
     iconButton.setFont(iconButton.getFont().deriveFont((float) size));
     iconButton.setForeground(button.getForeground());

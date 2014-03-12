@@ -2,20 +2,22 @@ package org.multibit.hd.ui.views.wizards.welcome;
 
 import com.google.common.base.Optional;
 import net.miginfocom.swing.MigLayout;
-import org.multibit.hd.ui.i18n.MessageKey;
-import org.multibit.hd.ui.events.controller.ControllerEvents;
+import org.multibit.hd.core.concurrent.SafeExecutors;
+import org.multibit.hd.core.config.Configuration;
+import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.core.config.LanguageConfiguration;
 import org.multibit.hd.ui.events.view.ViewEvents;
-import org.multibit.hd.ui.i18n.Languages;
+import org.multibit.hd.ui.languages.LanguageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
+import org.multibit.hd.ui.views.components.ComboBoxes;
 import org.multibit.hd.ui.views.components.Labels;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
-import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.Panels;
+import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.wizards.AbstractWizard;
 import org.multibit.hd.ui.views.wizards.AbstractWizardPanelView;
 import org.multibit.hd.ui.views.wizards.WizardButton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -29,24 +31,20 @@ import java.util.Locale;
  * </ul>
  *
  * @since 0.0.1
- *         
+ *  
  */
 public class WelcomeSelectLanguagePanelView extends AbstractWizardPanelView<WelcomeWizardModel, String> implements ActionListener {
-
-  private static final Logger log = LoggerFactory.getLogger(WelcomeSelectLanguagePanelView.class);
 
   // Model
   private String localeCode = Languages.currentLocale().getLanguage();
 
   /**
-   * @param wizard The wizard managing the states
-   * @param panelName   The panel name to filter events from components
+   * @param wizard    The wizard managing the states
+   * @param panelName The panel name to filter events from components
    */
   public WelcomeSelectLanguagePanelView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.WELCOME_TITLE);
-
-    PanelDecorator.addExitCancelNext(this, wizard);
+    super(wizard, panelName, MessageKey.WELCOME_TITLE, AwesomeIcon.GLOBE);
 
   }
 
@@ -62,20 +60,27 @@ public class WelcomeSelectLanguagePanelView extends AbstractWizardPanelView<Welc
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.GLOBE);
-
-    panel.setLayout(new MigLayout(
-      "fill,insets 0", // Layout constraints
-      "[][][]", // Column constraints
-      "[]10[]" // Row constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migXYLayout(),
+      "[][]", // Column constraints
+      "[][]" // Row constraints
     ));
 
-    panel.add(Panels.newLanguageSelector(this), "wrap");
-    panel.add(Labels.newWelcomeNote(), "wrap");
+    JComboBox<String> languagesComboBox = ComboBoxes.newLanguagesComboBox(this, Languages.currentLocale());
 
-    return panel;
+    contentPanel.add(Labels.newSelectLanguageLabel(), "shrink");
+    contentPanel.add(languagesComboBox, "growx,width min:350:,push,wrap");
+    contentPanel.add(Labels.newWelcomeNote(), "grow,push,span 2,wrap");
+
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<WelcomeWizardModel> wizard) {
+
+    PanelDecorator.addExitCancelNext(this, wizard);
+
   }
 
   @Override
@@ -83,6 +88,13 @@ public class WelcomeSelectLanguagePanelView extends AbstractWizardPanelView<Welc
 
     // Enable the "next" button
     ViewEvents.fireWizardButtonEnabledEvent(getPanelName(), WizardButton.NEXT, true);
+
+  }
+
+  @Override
+  public void afterShow() {
+
+    // Do nothing
 
   }
 
@@ -99,16 +111,33 @@ public class WelcomeSelectLanguagePanelView extends AbstractWizardPanelView<Welc
    * @param e The action event
    */
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
 
-    JComboBox source = (JComboBox) e.getSource();
-    localeCode = String.valueOf(source.getSelectedItem()).substring(0,2);
+    // Hand over the configuration change to a background task
+    SafeExecutors.newFixedThreadPool(1).execute(new Runnable() {
+      @Override
+      public void run() {
 
-    Locale locale = Languages.newLocaleFromCode(localeCode);
+        JComboBox source = (JComboBox) e.getSource();
+        String localeCode = LanguageKey.values()[source.getSelectedIndex()].getKey();
 
-    log.debug("Language changed to '{}'",localeCode);
+        // Determine the new locale
+        Locale newLocale = Languages.newLocaleFromCode(localeCode);
 
-    ControllerEvents.fireChangeLocaleEvent(locale);
+        // Create a new configuration to reset the separators
+        Configuration configuration = Configurations.currentConfiguration.deepCopy();
+        LanguageConfiguration languageConfiguration = new LanguageConfiguration(newLocale);
+        configuration.setLanguageConfiguration(languageConfiguration);
+
+        // Update the main configuration
+        Configuration newConfiguration = Configurations.currentConfiguration.deepCopy();
+        newConfiguration.getLanguageConfiguration().setLocale(newLocale);
+
+        // Make the switch immediately
+        Configurations.switchConfiguration(newConfiguration);
+
+      }
+    });
 
   }
 }

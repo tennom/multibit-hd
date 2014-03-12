@@ -1,12 +1,6 @@
 package org.multibit.hd.ui.views.components;
 
-import net.miginfocom.swing.MigLayout;
-import org.multibit.hd.core.dto.WalletData;
-import org.multibit.hd.core.managers.InstallationManager;
-import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
-import org.multibit.hd.core.services.ContactService;
-import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.ui.views.components.confirm_password.ConfirmPasswordModel;
 import org.multibit.hd.ui.views.components.confirm_password.ConfirmPasswordView;
 import org.multibit.hd.ui.views.components.display_address.DisplayBitcoinAddressModel;
@@ -14,8 +8,12 @@ import org.multibit.hd.ui.views.components.display_address.DisplayBitcoinAddress
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountModel;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountStyle;
 import org.multibit.hd.ui.views.components.display_amount.DisplayAmountView;
+import org.multibit.hd.ui.views.components.display_message.DisplayInfoMessageModel;
+import org.multibit.hd.ui.views.components.display_message.DisplayInfoMessageView;
 import org.multibit.hd.ui.views.components.display_qrcode.DisplayQRCodeModel;
 import org.multibit.hd.ui.views.components.display_qrcode.DisplayQRCodeView;
+import org.multibit.hd.ui.views.components.display_security_alert.DisplaySecurityAlertModel;
+import org.multibit.hd.ui.views.components.display_security_alert.DisplaySecurityAlertView;
 import org.multibit.hd.ui.views.components.display_seed_phrase.DisplaySeedPhraseModel;
 import org.multibit.hd.ui.views.components.display_seed_phrase.DisplaySeedPhraseView;
 import org.multibit.hd.ui.views.components.enter_amount.EnterAmountModel;
@@ -28,13 +26,16 @@ import org.multibit.hd.ui.views.components.enter_search.EnterSearchModel;
 import org.multibit.hd.ui.views.components.enter_search.EnterSearchView;
 import org.multibit.hd.ui.views.components.enter_seed_phrase.EnterSeedPhraseModel;
 import org.multibit.hd.ui.views.components.enter_seed_phrase.EnterSeedPhraseView;
+import org.multibit.hd.ui.views.components.enter_tags.EnterTagsModel;
+import org.multibit.hd.ui.views.components.enter_tags.EnterTagsView;
 import org.multibit.hd.ui.views.components.select_backup_summary.SelectBackupSummaryModel;
 import org.multibit.hd.ui.views.components.select_backup_summary.SelectBackupSummaryView;
 import org.multibit.hd.ui.views.components.select_file.SelectFileModel;
 import org.multibit.hd.ui.views.components.select_file.SelectFileView;
+import org.multibit.hd.ui.views.components.wallet_detail.WalletDetailModel;
+import org.multibit.hd.ui.views.components.wallet_detail.WalletDetailView;
 
-import javax.swing.*;
-import java.io.File;
+import java.util.List;
 
 /**
  * <p>Factory to provide the following to UI:</p>
@@ -48,41 +49,15 @@ import java.io.File;
 public class Components {
 
   /**
-   * <p>A wallet detail panel provides a summary of the information contained within the wallet</p>
+   * <p>A "wallet detail" panel provides summary details of the current wallet</p>
    *
-   * @return A new wallet detail panel
+   * @return A new "walletDetail" panel
    */
-  public static JPanel newWalletDetailPanel() {
+  public static ModelAndView<WalletDetailModel, WalletDetailView> newWalletDetailMaV(String panelName) {
+    WalletDetailModel model = new WalletDetailModel(panelName);
+    WalletDetailView view = new WalletDetailView(model);
 
-    MigLayout layout = new MigLayout(
-      "fillx", // Layout
-      "[]10[grow]", // Columns
-      "[][][][]"  // Rows
-    );
-
-    JPanel panel = Panels.newPanel(layout);
-
-    // TODO Add this to a wallet service
-    WalletData walletData = WalletManager.INSTANCE.getCurrentWalletData().get();
-    String applicationDirectory = InstallationManager.getOrCreateApplicationDataDirectory().getAbsolutePath();
-    File walletFile = WalletManager.INSTANCE.getCurrentWalletFilename().get();
-    String walletDirectory = walletFile.getParentFile().getName();
-
-    ContactService contactService = CoreServices.getOrCreateContactService(walletData.getWalletId());
-    int contactCount = contactService.allContacts(1,100).size();
-
-    // TODO Internationalize
-    panel.add(new JLabel("Summary"), "wrap");
-    panel.add(new JLabel("Application directory:"));
-    panel.add(new JLabel(applicationDirectory), "push,wrap");
-    panel.add(new JLabel("Wallet directory:"));
-    panel.add(new JLabel(walletDirectory), "push,wrap");
-    panel.add(new JLabel("Contacts:"));
-    panel.add(new JLabel(String.valueOf(contactCount)), "push,wrap");
-    panel.add(new JLabel("Transactions:"));
-    panel.add(new JLabel("165"), "push,wrap");
-
-    return panel;
+    return new ModelAndView<>(model, view);
   }
 
   /**
@@ -160,6 +135,42 @@ public class Components {
 
     DisplayQRCodeModel model = new DisplayQRCodeModel();
     DisplayQRCodeView view = new DisplayQRCodeView(model);
+
+    return new ModelAndView<>(model, view);
+
+  }
+
+  /**
+   * <p>A "display security alert" model and view displays a security alert with the following features:</p>
+   * <ul>
+   * <li>Danger themed message panel</li>
+   * <li>Button to close the light box popover</li>
+   * </ul>
+   *
+   * @return A new "display security alert" model and view
+   */
+  public static ModelAndView<DisplaySecurityAlertModel, DisplaySecurityAlertView> newDisplaySecurityAlertMaV() {
+
+    DisplaySecurityAlertModel model = new DisplaySecurityAlertModel();
+    DisplaySecurityAlertView view = new DisplaySecurityAlertView(model);
+
+    return new ModelAndView<>(model, view);
+
+  }
+
+  /**
+   * <p>A "display info message" model and view displays a message with the following features:</p>
+   * <ul>
+   * <li>Success themed message panel</li>
+   * <li>Button to close the light box popover</li>
+   * </ul>
+   *
+   * @return A new "display info message" model and view
+   */
+  public static ModelAndView<DisplayInfoMessageModel, DisplayInfoMessageView> newDisplayInfoMessageMaV() {
+
+    DisplayInfoMessageModel model = new DisplayInfoMessageModel();
+    DisplayInfoMessageView view = new DisplayInfoMessageView(model);
 
     return new ModelAndView<>(model, view);
 
@@ -246,6 +257,23 @@ public class Components {
 
     EnterSearchModel model = new EnterSearchModel(panelName);
     EnterSearchView view = new EnterSearchView(model);
+
+    return new ModelAndView<>(model, view);
+
+  }
+
+  /**
+   * <p>An "enter tags" model and view handles user data entry of multiple tags</p>
+   *
+   * @param panelName The panel name to filter events
+   * @param tags      The list of tags to edit
+   *
+   * @return A new "enter tags" model and view
+   */
+  public static ModelAndView<EnterTagsModel, EnterTagsView> newEnterTagsMaV(String panelName, List<String> tags) {
+
+    EnterTagsModel model = new EnterTagsModel(panelName, tags);
+    EnterTagsView view = new EnterTagsView(model);
 
     return new ModelAndView<>(model, view);
 

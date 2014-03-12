@@ -5,22 +5,24 @@ import com.google.common.base.Optional;
 import net.miginfocom.swing.MigLayout;
 import org.joda.time.DateTime;
 import org.multibit.hd.core.dto.WalletId;
-import org.multibit.hd.core.seed_phrase.Bip39SeedPhraseGenerator;
-import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
+import org.multibit.hd.core.exceptions.PaymentsLoadException;
 import org.multibit.hd.core.managers.BackupManager;
 import org.multibit.hd.core.managers.InstallationManager;
 import org.multibit.hd.core.managers.WalletManager;
+import org.multibit.hd.core.seed_phrase.Bip39SeedPhraseGenerator;
+import org.multibit.hd.core.seed_phrase.SeedPhraseGenerator;
 import org.multibit.hd.core.services.CoreServices;
+import org.multibit.hd.core.services.WalletService;
 import org.multibit.hd.core.utils.Dates;
+import org.multibit.hd.ui.MultiBitHD;
 import org.multibit.hd.ui.MultiBitUI;
 import org.multibit.hd.ui.events.view.ViewEvents;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.components.Labels;
-import org.multibit.hd.ui.views.components.panels.BackgroundPanel;
-import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.Panels;
 import org.multibit.hd.ui.views.components.enter_password.EnterPasswordModel;
 import org.multibit.hd.ui.views.components.enter_seed_phrase.EnterSeedPhraseModel;
+import org.multibit.hd.ui.views.components.panels.PanelDecorator;
 import org.multibit.hd.ui.views.components.select_backup_summary.SelectBackupSummaryModel;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
@@ -58,9 +60,7 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
    */
   public RestoreWalletReportPanelView(AbstractWizard<WelcomeWizardModel> wizard, String panelName) {
 
-    super(wizard.getWizardModel(), panelName, MessageKey.RESTORE_WALLET_REPORT_TITLE);
-
-    PanelDecorator.addFinish(this, wizard);
+    super(wizard, panelName, MessageKey.RESTORE_WALLET_REPORT_TITLE, AwesomeIcon.FILE_TEXT);
 
   }
 
@@ -75,25 +75,29 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
   }
 
   @Override
-  public JPanel newWizardViewPanel() {
+  public void initialiseContent(JPanel contentPanel) {
 
-    BackgroundPanel panel = Panels.newDetailBackgroundPanel(AwesomeIcon.GLOBE);
-
-    panel.setLayout(new MigLayout(
-            "fill,insets 0", // Layout constraints
-            "[][][]", // Column constraints
-            "[]10[]10[]10[]" // Row constraints
+    contentPanel.setLayout(new MigLayout(
+      Panels.migXYLayout(),
+      "[][][]", // Column constraints
+      "[]10[]10[]10[]" // Row constraints
     ));
 
     // Apply the theme
-    panel.setBackground(Themes.currentTheme.detailPanelBackground());
+    contentPanel.setBackground(Themes.currentTheme.detailPanelBackground());
 
     // Initialise to failure
     walletCreatedStatusLabel = Labels.newWalletCreatedStatus(false);
 
-    panel.add(walletCreatedStatusLabel, "wrap");
+    contentPanel.add(walletCreatedStatusLabel, "wrap");
 
-    return panel;
+  }
+
+  @Override
+  protected void initialiseButtons(AbstractWizard<WelcomeWizardModel> wizard) {
+
+    PanelDecorator.addFinish(this, wizard);
+
   }
 
   @Override
@@ -154,6 +158,19 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
     return true;
   }
 
+  @Override
+  public void afterShow() {
+
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        getFinishButton().requestFocusInWindow();
+      }
+    });
+
+  }
+
+
   /**
    * Create a wallet from a seed phrase, timestamp and password
    */
@@ -168,6 +185,16 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
       // TODO necessary to backup any existing wallet with the same seed before creation/ overwrite ?
       WalletManager.INSTANCE.createWallet(seed, password);
 
+      // Initialise the WalletService with the newly created wallet, which provides transaction information from the wallet
+
+      WalletService walletService = CoreServices.newWalletService();
+      MultiBitHD.setWalletService(walletService);
+      try {
+        walletService.initialise(InstallationManager.getOrCreateApplicationDataDirectory(), new WalletId(seed));
+      } catch (PaymentsLoadException ple) {
+        log.error("Failed to restore wallet. Error was '" + ple.getMessage() + "'.");
+        return false;
+      }
       CoreServices.newBitcoinNetworkService().replayWallet(replayDate);
 
       return true;
@@ -187,8 +214,8 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
     SelectBackupSummaryModel selectedBackupSummaryModel = getWizardModel().getSelectBackupSummaryModel();
 
     if (selectedBackupSummaryModel == null || selectedBackupSummaryModel.getValue() == null ||
-            selectedBackupSummaryModel.getValue().getFile() == null) {
-      log.debug("No wallet backup to load from the model");
+      selectedBackupSummaryModel.getValue().getFile() == null) {
+      log.debug("No wallet backup to loadContacts from the model");
       return false;
     }
 

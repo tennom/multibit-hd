@@ -1,8 +1,8 @@
 package org.multibit.hd.ui.views.components;
 
 import org.multibit.hd.ui.MultiBitUI;
-import org.multibit.hd.ui.i18n.Languages;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.views.fonts.AwesomeDecorator;
 import org.multibit.hd.ui.views.fonts.AwesomeIcon;
 import org.multibit.hd.ui.views.themes.NimbusDecorator;
@@ -45,11 +45,14 @@ public class Buttons {
     // Ensure we use the correct component orientation
     button.applyComponentOrientation(Languages.currentComponentOrientation());
 
+    // Apply default theme (do not set foreground color)
+    NimbusDecorator.applyThemeColor(Themes.currentTheme.buttonBackground(), button);
+
     return button;
   }
 
   /**
-   * @param key    The resource key for the i18n string
+   * @param key    The resource key for the language string
    * @param values The values to apply to the string (can be null)
    *
    * @return A new JButton with default styling
@@ -63,12 +66,11 @@ public class Buttons {
 
     // TODO Accessibility API - append _ACCESSIBILITY to .name() ?
 
-
     return button;
   }
 
   /**
-   * @param key    The resource key for the i18n string
+   * @param key    The resource key for the language string
    * @param values The values to apply to the string (can be null)
    *
    * @return A new JButton with default styling and text arranged below the icon
@@ -80,20 +82,27 @@ public class Buttons {
     button.setVerticalTextPosition(SwingConstants.BOTTOM);
     button.setHorizontalTextPosition(SwingConstants.CENTER);
 
+    // Apply default theme
+    NimbusDecorator.applyThemeColor(Themes.currentTheme.buttonBackground(), button);
+
     return button;
   }
 
   /**
-   * @param action The click action
+   * <p>Create a new alert panel button</p>
    *
-   * @return A new "Yes" button with icon
+   * @param action     The click action
+   * @param messageKey The message key to use
+   * @param icon       The awesome icon to use
+   *
+   * @return A new "alert panel" button with icon
    */
-  public static JButton newYesButton(Action action) {
+  public static JButton newAlertPanelButton(Action action, MessageKey messageKey, AwesomeIcon icon) {
 
-    JButton button = newButton(action, MessageKey.YES);
+    JButton button = newButton(action, messageKey);
     button.setAction(action);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.CHECK, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+    AwesomeDecorator.applyIcon(icon, button, true, MultiBitUI.SMALL_ICON_SIZE);
 
     return button;
 
@@ -119,14 +128,14 @@ public class Buttons {
   /**
    * @param action The click action
    *
-   * @return A new "Apply" button with icon
+   * @return A new "Undo" button with icon
    */
-  public static JButton newApplyButton(Action action) {
+  public static JButton newUndoButton(Action action) {
 
-    JButton button = newButton(action, MessageKey.APPLY);
+    JButton button = newButton(action, MessageKey.UNDO);
     button.setAction(action);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.EDIT, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+    AwesomeDecorator.applyIcon(AwesomeIcon.UNDO, button, false, MultiBitUI.NORMAL_ICON_SIZE);
 
     return button;
 
@@ -135,14 +144,29 @@ public class Buttons {
   /**
    * @param action The click action
    *
-   * @return A new "Undo" button with icon
+   * @return A new "Export" button with icon
    */
-  public static JButton newUndoButton(Action action) {
+  public static JButton newExportButton(Action action) {
 
-    JButton button = newButton(action, MessageKey.UNDO);
+    JButton button = newButton(action, MessageKey.EXPORT);
     button.setAction(action);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.UNDO, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+    AwesomeDecorator.applyIcon(AwesomeIcon.SHARE_SQUARE_ALT, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+
+  }
+  /**
+   * @param action The click action
+   *
+   * @return A new "Deete Payment Request" button with icon
+   */
+  public static JButton newDeletePaymentRequestButton(Action action) {
+
+    JButton button = newButton(action, MessageKey.DELETE_PAYMENT_REQUEST);
+    button.setAction(action);
+
+    AwesomeDecorator.applyIcon(AwesomeIcon.TRASH_ALT, button, false, MultiBitUI.NORMAL_ICON_SIZE);
 
     return button;
 
@@ -230,6 +254,38 @@ public class Buttons {
     button.setAction(action);
 
     AwesomeDecorator.applyIcon(AwesomeIcon.FLAG_CHECKERED, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+
+  }
+
+  /**
+    * @param action The click action
+    *
+    * @return A new "Unlock" button with icon (this is a finish button but just looks differently)
+    */
+   public static JButton newUnlockButton(Action action) {
+
+     JButton button = newButton(action, MessageKey.PASSWORD_UNLOCK);
+     button.setAction(action);
+
+     AwesomeDecorator.applyIcon(AwesomeIcon.UNLOCK, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+     return button;
+
+   }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "Apply" button with icon
+   */
+  public static JButton newApplyButton(Action action) {
+
+    JButton button = newButton(action, MessageKey.APPLY);
+    button.setAction(action);
+
+    AwesomeDecorator.applyIcon(AwesomeIcon.CHECK, button, false, MultiBitUI.NORMAL_ICON_SIZE);
 
     return button;
 
@@ -341,7 +397,16 @@ public class Buttons {
 
     JButton button = newButton(action);
 
-    AwesomeDecorator.applyIcon(AwesomeIcon.QRCODE, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+    // Require this background color to ensure people can find the QR code icon quickly
+    NimbusDecorator.applyThemeColor(
+      Themes.currentTheme.readOnlyBackground(),
+      button
+    );
+
+    Icon enabledIcon = Images.newQRCodeIcon();
+
+    button.setIcon(enabledIcon);
+    button.setDisabledIcon(enabledIcon);
 
     return button;
 
@@ -435,6 +500,20 @@ public class Buttons {
   }
 
   /**
+    * @param action The click action
+    *
+    * @return A new "details" button with icon
+    */
+   public static JButton newDetailsButton(Action action) {
+
+     JButton button = newButton(action, MessageKey.DETAILS);
+
+     AwesomeDecorator.applyIcon(AwesomeIcon.FILE_TEXT_ALT, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+     return button;
+   }
+
+   /**
    * @param action The click action
    *
    * @return A new "delete" button with icon
@@ -458,6 +537,66 @@ public class Buttons {
     JButton button = newButton(action);
 
     AwesomeDecorator.applyIcon(AwesomeIcon.SEARCH, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "back" button with icon
+   */
+  public static JButton newBackButton(Action action) {
+
+    JButton button = newButton(action);
+
+    AwesomeIcon icon = AwesomeDecorator.select(AwesomeIcon.ARROW_LEFT, AwesomeIcon.ARROW_RIGHT);
+
+    AwesomeDecorator.applyIcon(icon, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "forward" button with icon
+   */
+  public static JButton newForwardButton(Action action) {
+
+    JButton button = newButton(action);
+
+    AwesomeIcon icon = AwesomeDecorator.select(AwesomeIcon.ARROW_RIGHT, AwesomeIcon.ARROW_LEFT);
+
+    AwesomeDecorator.applyIcon(icon, button, false, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "launch browser" button with icon
+   */
+  public static JButton newLaunchBrowserButton(Action action) {
+
+    JButton button = newButton(action);
+
+    AwesomeDecorator.applyIcon(AwesomeIcon.LAPTOP, button, true, MultiBitUI.NORMAL_ICON_SIZE);
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "restore" button with icon
+   */
+  public static JButton newRestoreButton(Action action) {
+
+    JButton button = newButton(action, MessageKey.RESTORE);
+
+    AwesomeDecorator.applyIcon(AwesomeIcon.MAGIC, button, false, MultiBitUI.NORMAL_ICON_SIZE);
 
     return button;
   }
@@ -502,6 +641,106 @@ public class Buttons {
 
     AwesomeDecorator.applyIcon(
       AwesomeIcon.WRENCH,
+      button,
+      true,
+      JLabel.BOTTOM,
+      MultiBitUI.LARGE_ICON_SIZE
+    );
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "language settings" wizard button with icon
+   */
+  public static JButton newShowLanguageSettingsWizardButton(Action action) {
+
+    JButton button = newLargeButton(action, MessageKey.SHOW_LANGUAGE_WIZARD);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.GLOBE,
+      button,
+      true,
+      JLabel.BOTTOM,
+      MultiBitUI.LARGE_ICON_SIZE
+    );
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "Bitcoin settings" wizard button with icon
+   */
+  public static JButton newShowBitcoinSettingsWizardButton(Action action) {
+
+    JButton button = newLargeButton(action, MessageKey.SHOW_BITCOIN_WIZARD);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.BITCOIN,
+      button,
+      true,
+      JLabel.BOTTOM,
+      MultiBitUI.LARGE_ICON_SIZE
+    );
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "exchange rate provider settings" wizard button with icon
+   */
+  public static JButton newShowExchangeSettingsWizardButton(Action action) {
+
+    JButton button = newLargeButton(action, MessageKey.SHOW_EXCHANGE_WIZARD);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.DOLLAR,
+      button,
+      true,
+      JLabel.BOTTOM,
+      MultiBitUI.LARGE_ICON_SIZE
+    );
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "Application settings" wizard button with icon
+   */
+  public static JButton newShowApplicationSettingsWizardButton(Action action) {
+
+    JButton button = newLargeButton(action, MessageKey.SHOW_APPLICATION_WIZARD);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.WRENCH,
+      button,
+      true,
+      JLabel.BOTTOM,
+      MultiBitUI.LARGE_ICON_SIZE
+    );
+
+    return button;
+  }
+
+  /**
+   * @param action The click action
+   *
+   * @return A new "Sound settings" wizard button with icon
+   */
+  public static JButton newShowSoundSettingsWizardButton(Action action) {
+
+    JButton button = newLargeButton(action, MessageKey.SHOW_SOUND_WIZARD);
+
+    AwesomeDecorator.applyIcon(
+      AwesomeIcon.MUSIC,
       button,
       true,
       JLabel.BOTTOM,

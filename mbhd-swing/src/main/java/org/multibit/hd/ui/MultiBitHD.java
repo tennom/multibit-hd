@@ -2,37 +2,31 @@ package org.multibit.hd.ui;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.xeiam.xchange.currency.MoneyUtils;
-import com.xeiam.xchange.mtgox.v2.MtGoxExchange;
+import org.multibit.hd.core.concurrent.SafeExecutors;
 import org.multibit.hd.core.dto.WalletData;
-import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.core.events.SecurityEvent;
+import org.multibit.hd.core.exceptions.PaymentsLoadException;
 import org.multibit.hd.core.managers.BackupManager;
 import org.multibit.hd.core.managers.InstallationManager;
 import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.services.BitcoinNetworkService;
 import org.multibit.hd.core.services.CoreServices;
-import org.multibit.hd.core.services.ExchangeTickerService;
+import org.multibit.hd.core.services.WalletService;
 import org.multibit.hd.core.utils.OSUtils;
 import org.multibit.hd.ui.audio.Sounds;
 import org.multibit.hd.ui.controllers.HeaderController;
 import org.multibit.hd.ui.controllers.MainController;
 import org.multibit.hd.ui.controllers.SidebarController;
-import org.multibit.hd.ui.events.controller.ControllerEvents;
-import org.multibit.hd.ui.events.view.ViewEvents;
-import org.multibit.hd.ui.i18n.Languages;
-import org.multibit.hd.ui.i18n.MessageKey;
+import org.multibit.hd.ui.languages.Languages;
+import org.multibit.hd.ui.languages.MessageKey;
 import org.multibit.hd.ui.platform.GenericApplication;
-import org.multibit.hd.ui.views.*;
-import org.multibit.hd.ui.views.components.Panels;
-import org.multibit.hd.ui.views.wizards.Wizards;
-import org.multibit.hd.ui.views.wizards.welcome.WelcomeWizardState;
+import org.multibit.hd.ui.views.MainView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.io.File;
-import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,6 +41,11 @@ public class MultiBitHD {
 
   private static BitcoinNetworkService bitcoinNetworkService;
 
+  private static WalletService walletService;
+
+  private static MainController mainController;
+  private static MainView mainView;
+
   /**
    * <p>Main entry point to the application</p>
    *
@@ -54,11 +53,17 @@ public class MultiBitHD {
    */
   public static void main(final String[] args) throws InterruptedException, UnsupportedLookAndFeelException {
 
+    // Prepare the JVM (Nimbus etc)
     initialiseJVM();
 
+    // Start core services (wallet manager, security alerts, configuration etc)
     initialiseCore(args);
 
+    // Create a new UI based on the configuration
     initialiseUI();
+
+    // Start supporting services (wizards, exchange, wallet access etc)
+    initialiseSupport();
 
   }
 
@@ -67,6 +72,17 @@ public class MultiBitHD {
    */
   public static BitcoinNetworkService getBitcoinNetworkService() {
     return bitcoinNetworkService;
+  }
+
+  /**
+   * @return The wallet service for the UI
+   */
+  public static WalletService getWalletService() {
+    return walletService;
+  }
+
+  public static void setWalletService(WalletService newWalletService) {
+    walletService = newWalletService;
   }
 
   /**
@@ -100,75 +116,127 @@ public class MultiBitHD {
     // Start the core services
     CoreServices.main(args);
 
-    // Pre-load sound library
+    // Pre-loadContacts sound library
     Sounds.initialise();
 
     if (OSUtils.isMac()) {
       System.getProperties().setProperty("com.apple.mrj.application.apple.menu.about.name", Languages.safeText(MessageKey.APPLICATION_TITLE));
     }
 
-    ExchangeTickerService exchangeTickerService = CoreServices.newExchangeService(MtGoxExchange.class.getName());
-    bitcoinNetworkService = CoreServices.newBitcoinNetworkService();
-
-    // Initialise the wallet manager, which will load the current wallet if available
-    File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
-
-    // Start up the exchange service
-    exchangeTickerService.start();
-
-    WalletManager.INSTANCE.initialise(applicationDataDirectory);
-    BackupManager.INSTANCE.initialise(applicationDataDirectory, null); // TODO load up the cloud backup if available from properties and insert here
-
-    // TODO Remove this when the Contact screen is ready
-    CoreServices
-      .getOrCreateContactService(
-        WalletManager.INSTANCE.getCurrentWalletData().get().getWalletId()
-      ).addDemoContacts();
+    startWalletService();
 
   }
 
   /**
    * <p>Initialise the UI once all the core services are in place</p>
+   * <p>This creates the singleton views and controllers that respond to configuration
+   * and theme changes</p>
    */
   private static void initialiseUI() {
 
-    // Create views
-    HeaderView headerView = new HeaderView();
-    SidebarView sidebarView = new SidebarView();
-    DetailView detailView = new DetailView();
-    FooterView footerView = new FooterView();
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
 
-    MainView mainView = new MainView(
-      headerView.getContentPanel(),
-      sidebarView.getContentPanel(),
-      detailView.getContentPanel(),
-      footerView.getContentPanel()
-    );
+        // Build the main view
+        mainView = new MainView();
 
-    // Create controllers
-    MainController mainController = new MainController();
-    HeaderController headerController = new HeaderController();
-    SidebarController sidebarController = new SidebarController();
+        // Create controllers
+        mainController = new MainController();
+        new HeaderController();
+        new SidebarController();
 
-    // Show the UI for the current locale
-    ControllerEvents.fireChangeLocaleEvent(Configurations.currentConfiguration.getLocale());
+        // Check for a current wallet
+        if (WalletManager.INSTANCE.getCurrentWalletData().isPresent()) {
+
+          // There is a wallet present - warm start
+          WalletData walletData = WalletManager.INSTANCE.getCurrentWalletData().get();
+          log.debug("The current wallet is:\nWallet id = '" + walletData.getWalletId().toString() + "\n" + walletData.getWallet().toString());
+
+          mainView.setShowExitingPasswordWizard(true);
+
+        } else {
+
+          // No wallet - cold start
+          log.debug("There is no current wallet so showing the 'WelcomeWizard'");
+          mainView.setShowExitingWelcomeWizard(true);
+
+        }
+
+        mainView.refresh();
+
+        overlaySecurityAlerts();
+
+      }
+
+    });
+  }
+
+  /**
+   * <p>Initialise the UI support services</p>
+   */
+  private static void initialiseSupport() {
+
+    // Continue building the support services in the background
+    SafeExecutors.newFixedThreadPool(1).execute(new Runnable() {
+      @Override
+      public void run() {
+
+        startBitcoinNetworkService();
+
+      }
+    });
+
+  }
+
+  /**
+   * <p>Start the wallet service (core)</p>
+   */
+  private static void startWalletService() {
+
+    // Initialise the wallet manager, which will load the current wallet if available
+    File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
+
+    WalletManager.INSTANCE.initialise(applicationDataDirectory);
+    BackupManager.INSTANCE.initialise(applicationDataDirectory, null);
 
     if (WalletManager.INSTANCE.getCurrentWalletData().isPresent()) {
-      // There is a wallet present - warm start
-      WalletData walletData = WalletManager.INSTANCE.getCurrentWalletData().get();
-      log.debug("The current wallet is:\nWallet id = '" + walletData.getWalletId().toString() + "\n" + walletData.getWallet().toString());
 
-      // TODO need to show warm start dialog (to get password) and unencrypt wallet and contacts
+      // Initialise the WalletService, which provides transaction information from the wallet
+      walletService = CoreServices.newWalletService();
+      try {
+        walletService.initialise(applicationDataDirectory, WalletManager.INSTANCE.getCurrentWalletData().get().getWalletId());
+      } catch (PaymentsLoadException ple) {
+        // Payments db did not load  TODO tell user or abort ??
+        log.error(ple.getClass().getCanonicalName() + "" + ple.getMessage());
+      }
 
-    } else {
-      // Show an exiting Welcome wizard
-      log.debug("There is no current wallet so showing the 'WelcomeWizard'");
-      Panels.showLightBox(Wizards.newExitingWelcomeWizard(WelcomeWizardState.WELCOME_SELECT_LANGUAGE).getWizardPanel());
+      // Create the history service for this wallet to catch any system events
+      CoreServices.getOrCreateHistoryService(Optional.of(WalletManager.INSTANCE.getCurrentWalletData().get().getWalletId()));
+    }
+  }
+
+  /**
+   * <p>Show any security alerts (UI)</p>
+   */
+  private static void overlaySecurityAlerts() {
+
+    // Catch up with any early security events
+    Optional<SecurityEvent> securityEvent = CoreServices.getApplicationEventService().getLatestSecurityEvent();
+
+    if (securityEvent.isPresent()) {
+      mainController.onSecurityEvent(securityEvent.get());
     }
 
-    // TODO enable the user to switch between the existing wallets
+  }
+
+  /**
+   * <p>Start the Bitcoin network service (support)</p>
+   */
+  private static void startBitcoinNetworkService() {
 
     // Start the bitcoin network service
+    bitcoinNetworkService = CoreServices.newBitcoinNetworkService();
     bitcoinNetworkService.start();
 
     Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
@@ -178,22 +246,6 @@ public class MultiBitHD {
       bitcoinNetworkService.downloadBlockChain();
     }
 
-    // Provide a starting balance
-    // TODO Get this from CoreServices - bitcoinj wallet class should not appear in GUI code
-    BigInteger satoshis;
-    Optional<WalletData> currentWalletData = WalletManager.INSTANCE.getCurrentWalletData();
-    if (currentWalletData.isPresent()) {
-      // Use the real wallet data
-      satoshis = currentWalletData.get().getWallet().getBalance();
-    } else {
-      // Use some dummy data
-      satoshis = BigInteger.ZERO;
-    }
-    ViewEvents.fireBalanceChangedEvent(
-      satoshis,
-      MoneyUtils.fromSatoshi(0),
-      "Unknown"
-    );
   }
 
   /**
@@ -204,4 +256,5 @@ public class MultiBitHD {
     log.info("Configuring native event handling");
 
   }
+
 }
