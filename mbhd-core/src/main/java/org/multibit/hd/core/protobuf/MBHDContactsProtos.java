@@ -6,10 +6,10 @@ package org.multibit.hd.core.protobuf;
 public final class MBHDContactsProtos {
   private MBHDContactsProtos() {}
   public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
+    com.google.protobuf.ExtensionRegistry registry) {
   }
   public interface TagOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+    extends com.google.protobuf.MessageOrBuilder {
 
     // required string tag_value = 1;
     /**
@@ -36,7 +36,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getTagValueBytes();
+    getTagValueBytes();
   }
   /**
    * Protobuf type {@code Tag}
@@ -47,8 +47,8 @@ public final class MBHDContactsProtos {
    * </pre>
    */
   public static final class Tag extends
-      com.google.protobuf.GeneratedMessage
-      implements TagOrBuilder {
+    com.google.protobuf.GeneratedMessage
+    implements TagOrBuilder {
     // Use Tag.newBuilder() to construct.
     private Tag(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -68,17 +68,17 @@ public final class MBHDContactsProtos {
     private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private Tag(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
+        com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -89,7 +89,7 @@ public final class MBHDContactsProtos {
               break;
             default: {
               if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
+                extensionRegistry, tag)) {
                 done = true;
               }
               break;
@@ -105,33 +105,33 @@ public final class MBHDContactsProtos {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+          e.getMessage()).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Tag_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Tag_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder.class);
+        .ensureFieldAccessorsInitialized(
+          org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder.class);
     }
 
     public static com.google.protobuf.Parser<Tag> PARSER =
-        new com.google.protobuf.AbstractParser<Tag>() {
-      public Tag parsePartialFrom(
+      new com.google.protobuf.AbstractParser<Tag>() {
+        public Tag parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Tag(input, extensionRegistry);
-      }
-    };
+          return new Tag(input, extensionRegistry);
+        }
+      };
 
     @java.lang.Override
     public com.google.protobuf.Parser<Tag> getParserForType() {
@@ -164,8 +164,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           tagValue_ = s;
@@ -181,12 +181,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getTagValueBytes() {
+    getTagValueBytes() {
       java.lang.Object ref = tagValue_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         tagValue_ = b;
         return b;
       } else {
@@ -211,7 +211,7 @@ public final class MBHDContactsProtos {
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+      throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getTagValueBytes());
@@ -237,60 +237,60 @@ public final class MBHDContactsProtos {
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+      throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      byte[] data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input)
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
@@ -303,7 +303,7 @@ public final class MBHDContactsProtos {
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -316,18 +316,18 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder {
+      com.google.protobuf.GeneratedMessage.Builder<Builder>
+      implements org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Tag_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Tag_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder.class);
+          .ensureFieldAccessorsInitialized(
+            org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder.class);
       }
 
       // Construct using org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.newBuilder()
@@ -336,7 +336,7 @@ public final class MBHDContactsProtos {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -360,7 +360,7 @@ public final class MBHDContactsProtos {
       }
 
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Tag_descriptor;
       }
 
@@ -411,16 +411,16 @@ public final class MBHDContactsProtos {
 
       public final boolean isInitialized() {
         if (!hasTagValue()) {
-          
+
           return false;
         }
         return true;
       }
 
       public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
         org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -459,7 +459,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = tagValue_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           tagValue_ = s;
           return s;
         } else {
@@ -474,12 +474,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getTagValueBytes() {
+      getTagValueBytes() {
         java.lang.Object ref = tagValue_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           tagValue_ = b;
           return b;
         } else {
@@ -494,11 +494,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setTagValue(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         tagValue_ = value;
         onChanged();
         return this;
@@ -524,11 +524,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setTagValueBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         tagValue_ = value;
         onChanged();
         return this;
@@ -546,7 +546,7 @@ public final class MBHDContactsProtos {
   }
 
   public interface ContactOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+    extends com.google.protobuf.MessageOrBuilder {
 
     // required string id = 1;
     /**
@@ -573,7 +573,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getIdBytes();
+    getIdBytes();
 
     // required string name = 2;
     /**
@@ -600,7 +600,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getNameBytes();
+    getNameBytes();
 
     // optional string email = 3;
     /**
@@ -627,7 +627,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getEmailBytes();
+    getEmailBytes();
 
     // optional string image_path = 4;
     /**
@@ -654,7 +654,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getImagePathBytes();
+    getImagePathBytes();
 
     // optional string bitcoin_address = 5;
     /**
@@ -681,7 +681,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getBitcoinAddressBytes();
+    getBitcoinAddressBytes();
 
     // optional string extended_public_key = 6;
     /**
@@ -708,14 +708,14 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     com.google.protobuf.ByteString
-        getExtendedPublicKeyBytes();
+    getExtendedPublicKeyBytes();
 
     // optional string notes = 7;
     /**
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     boolean hasNotes();
@@ -723,7 +723,7 @@ public final class MBHDContactsProtos {
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     java.lang.String getNotes();
@@ -731,11 +731,11 @@ public final class MBHDContactsProtos {
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     com.google.protobuf.ByteString
-        getNotesBytes();
+    getNotesBytes();
 
     // repeated .Tag tag = 8;
     /**
@@ -745,8 +745,8 @@ public final class MBHDContactsProtos {
      * the tags, as repeated strings
      * </pre>
      */
-    java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag> 
-        getTagList();
+    java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag>
+    getTagList();
     /**
      * <code>repeated .Tag tag = 8;</code>
      *
@@ -770,8 +770,8 @@ public final class MBHDContactsProtos {
      * the tags, as repeated strings
      * </pre>
      */
-    java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> 
-        getTagOrBuilderList();
+    java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>
+    getTagOrBuilderList();
     /**
      * <code>repeated .Tag tag = 8;</code>
      *
@@ -780,19 +780,19 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder getTagOrBuilder(
-        int index);
+      int index);
   }
   /**
    * Protobuf type {@code Contact}
    *
    * <pre>
-   ** 
-   * A single contact 
+   **
+   * A single contact
    * </pre>
    */
   public static final class Contact extends
-      com.google.protobuf.GeneratedMessage
-      implements ContactOrBuilder {
+    com.google.protobuf.GeneratedMessage
+    implements ContactOrBuilder {
     // Use Contact.newBuilder() to construct.
     private Contact(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -812,17 +812,17 @@ public final class MBHDContactsProtos {
     private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private Contact(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
+        com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -833,7 +833,7 @@ public final class MBHDContactsProtos {
               break;
             default: {
               if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
+                extensionRegistry, tag)) {
                 done = true;
               }
               break;
@@ -887,7 +887,7 @@ public final class MBHDContactsProtos {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+          e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
           tag_ = java.util.Collections.unmodifiableList(tag_);
@@ -897,26 +897,26 @@ public final class MBHDContactsProtos {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contact_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contact_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder.class);
+        .ensureFieldAccessorsInitialized(
+          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder.class);
     }
 
     public static com.google.protobuf.Parser<Contact> PARSER =
-        new com.google.protobuf.AbstractParser<Contact>() {
-      public Contact parsePartialFrom(
+      new com.google.protobuf.AbstractParser<Contact>() {
+        public Contact parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Contact(input, extensionRegistry);
-      }
-    };
+          return new Contact(input, extensionRegistry);
+        }
+      };
 
     @java.lang.Override
     public com.google.protobuf.Parser<Contact> getParserForType() {
@@ -949,8 +949,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           id_ = s;
@@ -966,12 +966,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getIdBytes() {
+    getIdBytes() {
       java.lang.Object ref = id_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         id_ = b;
         return b;
       } else {
@@ -1004,8 +1004,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           name_ = s;
@@ -1021,12 +1021,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getNameBytes() {
+    getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
@@ -1059,8 +1059,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           email_ = s;
@@ -1076,12 +1076,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getEmailBytes() {
+    getEmailBytes() {
       java.lang.Object ref = email_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         email_ = b;
         return b;
       } else {
@@ -1114,8 +1114,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           imagePath_ = s;
@@ -1131,12 +1131,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getImagePathBytes() {
+    getImagePathBytes() {
       java.lang.Object ref = imagePath_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         imagePath_ = b;
         return b;
       } else {
@@ -1169,8 +1169,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           bitcoinAddress_ = s;
@@ -1186,12 +1186,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getBitcoinAddressBytes() {
+    getBitcoinAddressBytes() {
       java.lang.Object ref = bitcoinAddress_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         bitcoinAddress_ = b;
         return b;
       } else {
@@ -1224,8 +1224,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           extendedPublicKey_ = s;
@@ -1241,12 +1241,12 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getExtendedPublicKeyBytes() {
+    getExtendedPublicKeyBytes() {
       java.lang.Object ref = extendedPublicKey_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         extendedPublicKey_ = b;
         return b;
       } else {
@@ -1261,7 +1261,7 @@ public final class MBHDContactsProtos {
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     public boolean hasNotes() {
@@ -1271,7 +1271,7 @@ public final class MBHDContactsProtos {
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     public java.lang.String getNotes() {
@@ -1279,8 +1279,8 @@ public final class MBHDContactsProtos {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs =
+          (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           notes_ = s;
@@ -1292,16 +1292,16 @@ public final class MBHDContactsProtos {
      * <code>optional string notes = 7;</code>
      *
      * <pre>
-     * notes 
+     * notes
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getNotesBytes() {
+    getNotesBytes() {
       java.lang.Object ref = notes_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8(
+            (java.lang.String) ref);
         notes_ = b;
         return b;
       } else {
@@ -1329,8 +1329,8 @@ public final class MBHDContactsProtos {
      * the tags, as repeated strings
      * </pre>
      */
-    public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> 
-        getTagOrBuilderList() {
+    public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>
+    getTagOrBuilderList() {
       return tag_;
     }
     /**
@@ -1361,7 +1361,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder getTagOrBuilder(
-        int index) {
+      int index) {
       return tag_.get(index);
     }
 
@@ -1399,7 +1399,7 @@ public final class MBHDContactsProtos {
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+      throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getIdBytes());
@@ -1474,60 +1474,60 @@ public final class MBHDContactsProtos {
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+      throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      byte[] data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input)
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
@@ -1540,7 +1540,7 @@ public final class MBHDContactsProtos {
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1548,23 +1548,23 @@ public final class MBHDContactsProtos {
      * Protobuf type {@code Contact}
      *
      * <pre>
-     ** 
-     * A single contact 
+     **
+     * A single contact
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder {
+      com.google.protobuf.GeneratedMessage.Builder<Builder>
+      implements org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contact_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contact_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder.class);
+          .ensureFieldAccessorsInitialized(
+            org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder.class);
       }
 
       // Construct using org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.newBuilder()
@@ -1573,7 +1573,7 @@ public final class MBHDContactsProtos {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1616,7 +1616,7 @@ public final class MBHDContactsProtos {
       }
 
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contact_descriptor;
       }
 
@@ -1742,9 +1742,9 @@ public final class MBHDContactsProtos {
               tagBuilder_ = null;
               tag_ = other.tag_;
               bitField0_ = (bitField0_ & ~0x00000080);
-              tagBuilder_ = 
+              tagBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getTagFieldBuilder() : null;
+                  getTagFieldBuilder() : null;
             } else {
               tagBuilder_.addAllMessages(other.tag_);
             }
@@ -1756,16 +1756,16 @@ public final class MBHDContactsProtos {
 
       public final boolean isInitialized() {
         if (!hasId()) {
-          
+
           return false;
         }
         if (!hasName()) {
-          
+
           return false;
         }
         for (int i = 0; i < getTagCount(); i++) {
           if (!getTag(i).isInitialized()) {
-            
+
             return false;
           }
         }
@@ -1773,9 +1773,9 @@ public final class MBHDContactsProtos {
       }
 
       public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
         org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -1814,7 +1814,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = id_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           id_ = s;
           return s;
         } else {
@@ -1829,12 +1829,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getIdBytes() {
+      getIdBytes() {
         java.lang.Object ref = id_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           id_ = b;
           return b;
         } else {
@@ -1849,11 +1849,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setId(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         id_ = value;
         onChanged();
         return this;
@@ -1879,11 +1879,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setIdBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
         id_ = value;
         onChanged();
         return this;
@@ -1912,7 +1912,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           name_ = s;
           return s;
         } else {
@@ -1927,12 +1927,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getNameBytes() {
+      getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           name_ = b;
           return b;
         } else {
@@ -1947,11 +1947,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setName(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
         name_ = value;
         onChanged();
         return this;
@@ -1977,11 +1977,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setNameBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000002;
         name_ = value;
         onChanged();
         return this;
@@ -2010,7 +2010,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = email_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           email_ = s;
           return s;
         } else {
@@ -2025,12 +2025,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getEmailBytes() {
+      getEmailBytes() {
         java.lang.Object ref = email_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           email_ = b;
           return b;
         } else {
@@ -2045,11 +2045,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setEmail(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
         email_ = value;
         onChanged();
         return this;
@@ -2075,11 +2075,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setEmailBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
         email_ = value;
         onChanged();
         return this;
@@ -2108,7 +2108,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = imagePath_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           imagePath_ = s;
           return s;
         } else {
@@ -2123,12 +2123,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getImagePathBytes() {
+      getImagePathBytes() {
         java.lang.Object ref = imagePath_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           imagePath_ = b;
           return b;
         } else {
@@ -2143,11 +2143,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setImagePath(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
         imagePath_ = value;
         onChanged();
         return this;
@@ -2173,11 +2173,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setImagePathBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
         imagePath_ = value;
         onChanged();
         return this;
@@ -2206,7 +2206,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = bitcoinAddress_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           bitcoinAddress_ = s;
           return s;
         } else {
@@ -2221,12 +2221,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getBitcoinAddressBytes() {
+      getBitcoinAddressBytes() {
         java.lang.Object ref = bitcoinAddress_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           bitcoinAddress_ = b;
           return b;
         } else {
@@ -2241,11 +2241,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setBitcoinAddress(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000010;
         bitcoinAddress_ = value;
         onChanged();
         return this;
@@ -2271,11 +2271,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setBitcoinAddressBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000010;
         bitcoinAddress_ = value;
         onChanged();
         return this;
@@ -2304,7 +2304,7 @@ public final class MBHDContactsProtos {
         java.lang.Object ref = extendedPublicKey_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           extendedPublicKey_ = s;
           return s;
         } else {
@@ -2319,12 +2319,12 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getExtendedPublicKeyBytes() {
+      getExtendedPublicKeyBytes() {
         java.lang.Object ref = extendedPublicKey_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           extendedPublicKey_ = b;
           return b;
         } else {
@@ -2339,11 +2339,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setExtendedPublicKey(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000020;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000020;
         extendedPublicKey_ = value;
         onChanged();
         return this;
@@ -2369,11 +2369,11 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setExtendedPublicKeyBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000020;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000020;
         extendedPublicKey_ = value;
         onChanged();
         return this;
@@ -2385,7 +2385,7 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public boolean hasNotes() {
@@ -2395,14 +2395,14 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public java.lang.String getNotes() {
         java.lang.Object ref = notes_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
+            .toStringUtf8();
           notes_ = s;
           return s;
         } else {
@@ -2413,16 +2413,16 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getNotesBytes() {
+      getNotesBytes() {
         java.lang.Object ref = notes_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+          com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
           notes_ = b;
           return b;
         } else {
@@ -2433,15 +2433,15 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public Builder setNotes(
-          java.lang.String value) {
+        java.lang.String value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000040;
         notes_ = value;
         onChanged();
         return this;
@@ -2450,7 +2450,7 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public Builder clearNotes() {
@@ -2463,15 +2463,15 @@ public final class MBHDContactsProtos {
        * <code>optional string notes = 7;</code>
        *
        * <pre>
-       * notes 
+       * notes
        * </pre>
        */
       public Builder setNotesBytes(
-          com.google.protobuf.ByteString value) {
+        com.google.protobuf.ByteString value) {
         if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000040;
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000040;
         notes_ = value;
         onChanged();
         return this;
@@ -2484,11 +2484,11 @@ public final class MBHDContactsProtos {
         if (!((bitField0_ & 0x00000080) == 0x00000080)) {
           tag_ = new java.util.ArrayList<org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag>(tag_);
           bitField0_ |= 0x00000080;
-         }
+        }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> tagBuilder_;
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> tagBuilder_;
 
       /**
        * <code>repeated .Tag tag = 8;</code>
@@ -2540,7 +2540,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setTag(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag value) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag value) {
         if (tagBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2561,7 +2561,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setTag(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
         if (tagBuilder_ == null) {
           ensureTagIsMutable();
           tag_.set(index, builderForValue.build());
@@ -2599,7 +2599,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addTag(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag value) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag value) {
         if (tagBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2620,7 +2620,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addTag(
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
         if (tagBuilder_ == null) {
           ensureTagIsMutable();
           tag_.add(builderForValue.build());
@@ -2638,7 +2638,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addTag(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder builderForValue) {
         if (tagBuilder_ == null) {
           ensureTagIsMutable();
           tag_.add(index, builderForValue.build());
@@ -2656,7 +2656,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addAllTag(
-          java.lang.Iterable<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag> values) {
+        java.lang.Iterable<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag> values) {
         if (tagBuilder_ == null) {
           ensureTagIsMutable();
           super.addAll(values, tag_);
@@ -2708,7 +2708,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder getTagBuilder(
-          int index) {
+        int index) {
         return getTagFieldBuilder().getBuilder(index);
       }
       /**
@@ -2719,7 +2719,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder getTagOrBuilder(
-          int index) {
+        int index) {
         if (tagBuilder_ == null) {
           return tag_.get(index);  } else {
           return tagBuilder_.getMessageOrBuilder(index);
@@ -2732,8 +2732,8 @@ public final class MBHDContactsProtos {
        * the tags, as repeated strings
        * </pre>
        */
-      public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> 
-           getTagOrBuilderList() {
+      public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>
+      getTagOrBuilderList() {
         if (tagBuilder_ != null) {
           return tagBuilder_.getMessageOrBuilderList();
         } else {
@@ -2749,7 +2749,7 @@ public final class MBHDContactsProtos {
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder addTagBuilder() {
         return getTagFieldBuilder().addBuilder(
-            org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.getDefaultInstance());
+          org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.getDefaultInstance());
       }
       /**
        * <code>repeated .Tag tag = 8;</code>
@@ -2759,9 +2759,9 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder addTagBuilder(
-          int index) {
+        int index) {
         return getTagFieldBuilder().addBuilder(
-            index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.getDefaultInstance());
+          index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.getDefaultInstance());
       }
       /**
        * <code>repeated .Tag tag = 8;</code>
@@ -2770,20 +2770,20 @@ public final class MBHDContactsProtos {
        * the tags, as repeated strings
        * </pre>
        */
-      public java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder> 
-           getTagBuilderList() {
+      public java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder>
+      getTagBuilderList() {
         return getTagFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder> 
-          getTagFieldBuilder() {
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>
+      getTagFieldBuilder() {
         if (tagBuilder_ == null) {
           tagBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>(
-                  tag_,
-                  ((bitField0_ & 0x00000080) == 0x00000080),
-                  getParentForChildren(),
-                  isClean());
+            org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag, org.multibit.hd.core.protobuf.MBHDContactsProtos.Tag.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.TagOrBuilder>(
+            tag_,
+            ((bitField0_ & 0x00000080) == 0x00000080),
+            getParentForChildren(),
+            isClean());
           tag_ = null;
         }
         return tagBuilder_;
@@ -2801,7 +2801,7 @@ public final class MBHDContactsProtos {
   }
 
   public interface ContactsOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+    extends com.google.protobuf.MessageOrBuilder {
 
     // repeated .Contact contact = 1;
     /**
@@ -2811,8 +2811,8 @@ public final class MBHDContactsProtos {
      * the contacts, repeated
      * </pre>
      */
-    java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact> 
-        getContactList();
+    java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact>
+    getContactList();
     /**
      * <code>repeated .Contact contact = 1;</code>
      *
@@ -2836,8 +2836,8 @@ public final class MBHDContactsProtos {
      * the contacts, repeated
      * </pre>
      */
-    java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> 
-        getContactOrBuilderList();
+    java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>
+    getContactOrBuilderList();
     /**
      * <code>repeated .Contact contact = 1;</code>
      *
@@ -2846,7 +2846,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder getContactOrBuilder(
-        int index);
+      int index);
   }
   /**
    * Protobuf type {@code Contacts}
@@ -2857,8 +2857,8 @@ public final class MBHDContactsProtos {
    * </pre>
    */
   public static final class Contacts extends
-      com.google.protobuf.GeneratedMessage
-      implements ContactsOrBuilder {
+    com.google.protobuf.GeneratedMessage
+    implements ContactsOrBuilder {
     // Use Contacts.newBuilder() to construct.
     private Contacts(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -2878,17 +2878,17 @@ public final class MBHDContactsProtos {
     private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private Contacts(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
+        com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -2899,7 +2899,7 @@ public final class MBHDContactsProtos {
               break;
             default: {
               if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
+                extensionRegistry, tag)) {
                 done = true;
               }
               break;
@@ -2918,7 +2918,7 @@ public final class MBHDContactsProtos {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+          e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           contact_ = java.util.Collections.unmodifiableList(contact_);
@@ -2928,26 +2928,26 @@ public final class MBHDContactsProtos {
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    getDescriptor() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contacts_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    internalGetFieldAccessorTable() {
       return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contacts_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.Builder.class);
+        .ensureFieldAccessorsInitialized(
+          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.Builder.class);
     }
 
     public static com.google.protobuf.Parser<Contacts> PARSER =
-        new com.google.protobuf.AbstractParser<Contacts>() {
-      public Contacts parsePartialFrom(
+      new com.google.protobuf.AbstractParser<Contacts>() {
+        public Contacts parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Contacts(input, extensionRegistry);
-      }
-    };
+          return new Contacts(input, extensionRegistry);
+        }
+      };
 
     @java.lang.Override
     public com.google.protobuf.Parser<Contacts> getParserForType() {
@@ -2974,8 +2974,8 @@ public final class MBHDContactsProtos {
      * the contacts, repeated
      * </pre>
      */
-    public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> 
-        getContactOrBuilderList() {
+    public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>
+    getContactOrBuilderList() {
       return contact_;
     }
     /**
@@ -3006,7 +3006,7 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder getContactOrBuilder(
-        int index) {
+      int index) {
       return contact_.get(index);
     }
 
@@ -3029,7 +3029,7 @@ public final class MBHDContactsProtos {
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+      throws java.io.IOException {
       getSerializedSize();
       for (int i = 0; i < contact_.size(); i++) {
         output.writeMessage(1, contact_.get(i));
@@ -3055,60 +3055,60 @@ public final class MBHDContactsProtos {
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
+      throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
 
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      com.google.protobuf.ByteString data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
+      byte[] data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input)
+      throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
     public static org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
+      com.google.protobuf.CodedInputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
 
@@ -3121,7 +3121,7 @@ public final class MBHDContactsProtos {
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3134,18 +3134,18 @@ public final class MBHDContactsProtos {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactsOrBuilder {
+      com.google.protobuf.GeneratedMessage.Builder<Builder>
+      implements org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      getDescriptor() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contacts_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contacts_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.Builder.class);
+          .ensureFieldAccessorsInitialized(
+            org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.class, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.Builder.class);
       }
 
       // Construct using org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts.newBuilder()
@@ -3154,7 +3154,7 @@ public final class MBHDContactsProtos {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3183,7 +3183,7 @@ public final class MBHDContactsProtos {
       }
 
       public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      getDescriptorForType() {
         return org.multibit.hd.core.protobuf.MBHDContactsProtos.internal_static_Contacts_descriptor;
       }
 
@@ -3244,9 +3244,9 @@ public final class MBHDContactsProtos {
               contactBuilder_ = null;
               contact_ = other.contact_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              contactBuilder_ = 
+              contactBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getContactFieldBuilder() : null;
+                  getContactFieldBuilder() : null;
             } else {
               contactBuilder_.addAllMessages(other.contact_);
             }
@@ -3259,7 +3259,7 @@ public final class MBHDContactsProtos {
       public final boolean isInitialized() {
         for (int i = 0; i < getContactCount(); i++) {
           if (!getContact(i).isInitialized()) {
-            
+
             return false;
           }
         }
@@ -3267,9 +3267,9 @@ public final class MBHDContactsProtos {
       }
 
       public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
         org.multibit.hd.core.protobuf.MBHDContactsProtos.Contacts parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
@@ -3292,11 +3292,11 @@ public final class MBHDContactsProtos {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
           contact_ = new java.util.ArrayList<org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact>(contact_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> contactBuilder_;
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> contactBuilder_;
 
       /**
        * <code>repeated .Contact contact = 1;</code>
@@ -3348,7 +3348,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setContact(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact value) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact value) {
         if (contactBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3369,7 +3369,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder setContact(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
         if (contactBuilder_ == null) {
           ensureContactIsMutable();
           contact_.set(index, builderForValue.build());
@@ -3407,7 +3407,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addContact(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact value) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact value) {
         if (contactBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3428,7 +3428,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addContact(
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
         if (contactBuilder_ == null) {
           ensureContactIsMutable();
           contact_.add(builderForValue.build());
@@ -3446,7 +3446,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addContact(
-          int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
+        int index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder builderForValue) {
         if (contactBuilder_ == null) {
           ensureContactIsMutable();
           contact_.add(index, builderForValue.build());
@@ -3464,7 +3464,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public Builder addAllContact(
-          java.lang.Iterable<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact> values) {
+        java.lang.Iterable<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact> values) {
         if (contactBuilder_ == null) {
           ensureContactIsMutable();
           super.addAll(values, contact_);
@@ -3516,7 +3516,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder getContactBuilder(
-          int index) {
+        int index) {
         return getContactFieldBuilder().getBuilder(index);
       }
       /**
@@ -3527,7 +3527,7 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder getContactOrBuilder(
-          int index) {
+        int index) {
         if (contactBuilder_ == null) {
           return contact_.get(index);  } else {
           return contactBuilder_.getMessageOrBuilder(index);
@@ -3540,8 +3540,8 @@ public final class MBHDContactsProtos {
        * the contacts, repeated
        * </pre>
        */
-      public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> 
-           getContactOrBuilderList() {
+      public java.util.List<? extends org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>
+      getContactOrBuilderList() {
         if (contactBuilder_ != null) {
           return contactBuilder_.getMessageOrBuilderList();
         } else {
@@ -3557,7 +3557,7 @@ public final class MBHDContactsProtos {
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder addContactBuilder() {
         return getContactFieldBuilder().addBuilder(
-            org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.getDefaultInstance());
+          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.getDefaultInstance());
       }
       /**
        * <code>repeated .Contact contact = 1;</code>
@@ -3567,9 +3567,9 @@ public final class MBHDContactsProtos {
        * </pre>
        */
       public org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder addContactBuilder(
-          int index) {
+        int index) {
         return getContactFieldBuilder().addBuilder(
-            index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.getDefaultInstance());
+          index, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.getDefaultInstance());
       }
       /**
        * <code>repeated .Contact contact = 1;</code>
@@ -3578,20 +3578,20 @@ public final class MBHDContactsProtos {
        * the contacts, repeated
        * </pre>
        */
-      public java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder> 
-           getContactBuilderList() {
+      public java.util.List<org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder>
+      getContactBuilderList() {
         return getContactFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder> 
-          getContactFieldBuilder() {
+        org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>
+      getContactFieldBuilder() {
         if (contactBuilder_ == null) {
           contactBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>(
-                  contact_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
-                  getParentForChildren(),
-                  isClean());
+            org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact, org.multibit.hd.core.protobuf.MBHDContactsProtos.Contact.Builder, org.multibit.hd.core.protobuf.MBHDContactsProtos.ContactOrBuilder>(
+            contact_,
+            ((bitField0_ & 0x00000001) == 0x00000001),
+            getParentForChildren(),
+            isClean());
           contact_ = null;
         }
         return contactBuilder_;
@@ -3611,59 +3611,59 @@ public final class MBHDContactsProtos {
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_Tag_descriptor;
   private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Tag_fieldAccessorTable;
+  com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    internal_static_Tag_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_Contact_descriptor;
   private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Contact_fieldAccessorTable;
+  com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    internal_static_Contact_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_Contacts_descriptor;
   private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_Contacts_fieldAccessorTable;
+  com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    internal_static_Contacts_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
+  getDescriptor() {
     return descriptor;
   }
   private static com.google.protobuf.Descriptors.FileDescriptor
-      descriptor;
+    descriptor;
   static {
     java.lang.String[] descriptorData = {
       "\n\034main/protobuf/contacts.proto\"\030\n\003Tag\022\021\n" +
-      "\ttag_value\030\001 \002(\t\"\236\001\n\007Contact\022\n\n\002id\030\001 \002(\t" +
-      "\022\014\n\004name\030\002 \002(\t\022\r\n\005email\030\003 \001(\t\022\022\n\nimage_p" +
-      "ath\030\004 \001(\t\022\027\n\017bitcoin_address\030\005 \001(\t\022\033\n\023ex" +
-      "tended_public_key\030\006 \001(\t\022\r\n\005notes\030\007 \001(\t\022\021" +
-      "\n\003tag\030\010 \003(\0132\004.Tag\"%\n\010Contacts\022\031\n\007contact" +
-      "\030\001 \003(\0132\010.ContactB3\n\035org.multibit.hd.core" +
-      ".protobufB\022MBHDContactsProtos"
+        "\ttag_value\030\001 \002(\t\"\236\001\n\007Contact\022\n\n\002id\030\001 \002(\t" +
+        "\022\014\n\004name\030\002 \002(\t\022\r\n\005email\030\003 \001(\t\022\022\n\nimage_p" +
+        "ath\030\004 \001(\t\022\027\n\017bitcoin_address\030\005 \001(\t\022\033\n\023ex" +
+        "tended_public_key\030\006 \001(\t\022\r\n\005notes\030\007 \001(\t\022\021" +
+        "\n\003tag\030\010 \003(\0132\004.Tag\"%\n\010Contacts\022\031\n\007contact" +
+        "\030\001 \003(\0132\010.ContactB3\n\035org.multibit.hd.core" +
+        ".protobufB\022MBHDContactsProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
+          com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
           internal_static_Tag_descriptor =
             getDescriptor().getMessageTypes().get(0);
           internal_static_Tag_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_Tag_descriptor,
-              new java.lang.String[] { "TagValue", });
+            internal_static_Tag_descriptor,
+            new java.lang.String[] { "TagValue", });
           internal_static_Contact_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_Contact_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_Contact_descriptor,
-              new java.lang.String[] { "Id", "Name", "Email", "ImagePath", "BitcoinAddress", "ExtendedPublicKey", "Notes", "Tag", });
+            internal_static_Contact_descriptor,
+            new java.lang.String[] { "Id", "Name", "Email", "ImagePath", "BitcoinAddress", "ExtendedPublicKey", "Notes", "Tag", });
           internal_static_Contacts_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_Contacts_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_Contacts_descriptor,
-              new java.lang.String[] { "Contact", });
+            internal_static_Contacts_descriptor,
+            new java.lang.String[] { "Contact", });
           return null;
         }
       };
