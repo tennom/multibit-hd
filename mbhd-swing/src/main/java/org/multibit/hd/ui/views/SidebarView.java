@@ -43,6 +43,11 @@ public class SidebarView {
   private final JPanel contentPanel;
 
   /**
+   * The sidebar tree is shared
+   */
+  private JTree sidebarTree;
+
+  /**
    * When the last selection was made
    */
   private DateTime lastSelectionDateTime = Dates.nowUtc();
@@ -134,7 +139,7 @@ public class SidebarView {
 
     final JScrollPane sidebarPane = new JScrollPane();
 
-    final JTree sidebarTree = new JTree(createSidebarTreeNodes());
+    sidebarTree = new JTree(createSidebarTreeNodes());
     sidebarTree.setShowsRootHandles(false);
     sidebarTree.setRootVisible(false);
 

@@ -12,6 +12,7 @@ import org.multibit.hd.core.dto.CoreMessageKey;
 import org.multibit.hd.core.dto.RAGStatus;
 import org.multibit.hd.core.dto.SecuritySummary;
 import org.multibit.hd.core.events.BitcoinNetworkChangedEvent;
+import org.multibit.hd.core.events.ConfigurationChangedEvent;
 import org.multibit.hd.core.events.SecurityEvent;
 import org.multibit.hd.core.exchanges.ExchangeKey;
 import org.multibit.hd.core.services.CoreServices;
@@ -24,6 +25,9 @@ import org.multibit.hd.ui.events.view.ViewEvents;
 import org.multibit.hd.ui.languages.Languages;
 import org.multibit.hd.ui.models.Models;
 import org.multibit.hd.ui.views.components.Panels;
+import org.multibit.hd.ui.views.themes.Theme;
+import org.multibit.hd.ui.views.themes.ThemeKey;
+import org.multibit.hd.ui.views.themes.Themes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
