@@ -88,3 +88,7 @@ developers that cover a variety of environments.
 
 The use cases are described here:
 https://docs.google.com/document/d/18qtE5lmRzB32Sc9Ii37GySJGLKx3VNypBkjnHbNjdik/edit?usp=drive_web
+
+### Notes on JWrapper
+
+See jwrapper.md.
