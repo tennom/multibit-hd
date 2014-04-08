@@ -252,34 +252,29 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
 
     CharSequence password = enterPasswordMaV.getModel().getValue();
 
-    // TODO Adjust these checks when encrypted wallets are on the scene
-    if (!"".equals(password) && !"x".equals(password)) {
+    // If a password has been entered, put it into the WalletData (so that it is available for AES encryption of files)
 
-      // If a password has been entered, put it into the WalletData (so that it is available for AESencryption of files)
+    // Attempt to open the current wallet
+    try {
+      WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(InstallationManager.getOrCreateApplicationDataDirectory(), password);
+    } catch (WalletLoadException wle) {
+      // Wallet did not load - probably bad password
+      log.debug("Wallet did not load. Error was {} {}", wle.getClass().getCanonicalName(), wle.getMessage());
+      return false;
+    }
 
-      // Attempt to open the current wallet
-      try {
-        WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(InstallationManager.getOrCreateApplicationDataDirectory(), password);
-      } catch (WalletLoadException wle) {
-        // Wallet did not load - probably bad password
-        log.debug("Wallet did not load. Error was {} {}", wle.getClass().getCanonicalName(), wle.getMessage());
-        return false;
-      }
+    Optional<WalletData> walletDataOptional = WalletManager.INSTANCE.getCurrentWalletData();
+    if (walletDataOptional.isPresent()) {
 
-      Optional<WalletData> walletDataOptional = WalletManager.INSTANCE.getCurrentWalletData();
-      if (walletDataOptional.isPresent()) {
+      WalletData walletData = walletDataOptional.get();
+      walletData.setPassword(password);
 
-        WalletData walletData = walletDataOptional.get();
-        walletData.setPassword(password);
+      CoreServices.getOrCreateHistoryService(walletData.getWalletId());
 
-        CoreServices.getOrCreateHistoryService(walletData.getWalletId());
+      // Must have succeeded to be here
+      CoreServices.logHistory(Languages.safeText(MessageKey.PASSWORD_VERIFIED));
 
-        // Must have succeeded to be here
-        CoreServices.logHistory(Languages.safeText(MessageKey.PASSWORD_VERIFIED));
-
-        return true;
-      }
-
+      return true;
     }
 
     // Must have failed to be here
