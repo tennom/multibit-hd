@@ -8,11 +8,12 @@ import com.google.bitcoin.store.WalletProtobufSerializer;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.protobuf.ByteString;
 import org.bitcoinj.wallet.Protos;
 import org.multibit.hd.brit.crypto.AESUtils;
 import org.multibit.hd.brit.extensions.MatcherResponseWalletExtension;
 import org.multibit.hd.brit.extensions.SendFeeDtoWalletExtension;
-import org.multibit.hd.brit.utils.FileUtils;
+import org.multibit.hd.core.utils.FileUtils;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
@@ -29,6 +30,7 @@ import org.spongycastle.crypto.params.KeyParameter;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -111,7 +113,6 @@ public enum WalletManager implements WalletEventListener {
   public static final String MBHD_WALLET_SUFFIX = ".wallet";
   public static final String MBHD_AES_SUFFIX = ".aes";
   public static final String MBHD_WALLET_NAME = MBHD_WALLET_PREFIX + MBHD_WALLET_SUFFIX;
-  public static final String MBHD_WALLET_NAME_WITH_AES_SUFFIX = MBHD_WALLET_NAME + MBHD_AES_SUFFIX;
 
   private File applicationDataDirectory;
 
@@ -125,12 +126,17 @@ public enum WalletManager implements WalletEventListener {
           (byte) 0xb3, (byte) 0x29, (byte) 0x54, (byte) 0x86, (byte) 0x16, (byte) 0xc4, (byte) 0x89, (byte) 0x72, (byte) 0x3e};
 
   /**
+   * The salt used for deriving the KeyParameter from the password in AES encryption
+   */
+  public static final byte[] SCRYPT_SALT = new byte[]{(byte)0x35, (byte)0x51, (byte)0x03, (byte)0x80, (byte)0x75, (byte)0xa3, (byte)0xb0, (byte)0xc5};
+
+  /**
    * Initialise enum, loadContacts up the available wallets and find the current wallet
    *
    * @param applicationDataDirectory The directory in which to writeContacts and read wallets.
    */
   public void initialiseAndLoadWalletFromConfig(File applicationDataDirectory, CharSequence password) {
-
+log.error("password = {}", password);
     this.applicationDataDirectory = applicationDataDirectory;
 
     // Work out the list of available wallets in the application data directory
@@ -141,7 +147,7 @@ public enum WalletManager implements WalletEventListener {
     // If a wallet directory is present try to load the wallet
     if (!walletDirectories.isEmpty()) {
 
-      String walletFilename = walletDirectories.get(0) + File.separator + MBHD_WALLET_NAME;
+      String walletFilename = walletDirectories.get(0) + File.separator + MBHD_WALLET_NAME + MBHD_AES_SUFFIX;
       WalletData walletData = loadFromFile(new File(walletFilename), password);
       currentWalletData = Optional.of(walletData);
     } else {
@@ -188,7 +194,7 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException if there is already a wallet but the wallet version cannot be understood
    */
   public WalletData createWallet(String parentDirectoryName, byte[] seed, CharSequence password) throws WalletLoadException, WalletVersionException, IOException {
-
+    log.error("password = {}", password);
     WalletData walletDataToReturn;
 
     // Create a wallet id from the seed to work out the wallet root directory
@@ -197,9 +203,10 @@ public enum WalletManager implements WalletEventListener {
 
     File walletDirectory = WalletManager.getWalletDirectory(parentDirectoryName, walletRoot);
     File walletFile = new File(walletDirectory.getAbsolutePath() + File.separator + MBHD_WALLET_NAME);
-    if (walletFile.exists()) {
-      // There is already a wallet created with this root - if so loadContacts it and return that
-      walletDataToReturn = loadFromFile(walletFile, password);
+    File walletFileWithAES = new File(walletDirectory.getAbsolutePath() + File.separator + MBHD_WALLET_NAME + MBHD_AES_SUFFIX);
+    if (walletFileWithAES.exists()) {
+      // There is already a wallet created with this root - if so load it and return that
+      walletDataToReturn = loadFromFile(walletFileWithAES, password);
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
       }
@@ -212,7 +219,7 @@ public enum WalletManager implements WalletEventListener {
         }
       }
       // Create a wallet with a single private key using the seed (modulo-ed), encrypted with the password
-      KeyCrypter keyCrypter = new KeyCrypterScrypt();
+      KeyCrypter keyCrypter = new KeyCrypterScrypt(makeScryptParameters());
 
       Wallet walletToReturn = new Wallet(BitcoinNetworkService.NETWORK_PARAMETERS, keyCrypter);
       walletToReturn.setVersion(ENCRYPTED_WALLET_VERSION);
@@ -232,6 +239,8 @@ public enum WalletManager implements WalletEventListener {
 
       // Save it now to ensure it is on the disk
       walletToReturn.saveToFile(walletFile);
+      makeAESEncryptedCopyAndDeleteOriginal(walletFile, password);
+
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
       }
@@ -245,7 +254,7 @@ public enum WalletManager implements WalletEventListener {
     InstallationManager.copyCheckpointsTo(checkpointsFilename);
 
     // Create an initial rolling backup and zip backup
-    BackupManager.INSTANCE.createRollingBackup(currentWalletData.get());
+    BackupManager.INSTANCE.createRollingBackup(currentWalletData.get(), password);
     BackupManager.INSTANCE.createLocalAndCloudBackup(currentWalletData.get().getWalletId());
 
     return walletDataToReturn;
@@ -301,7 +310,7 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException   if the wallet is a version that is not supported by MultiBit HD
    */
   public WalletData loadFromFile(File walletFile, CharSequence password) throws WalletLoadException, WalletVersionException {
-
+    log.error("password = {}", password);
     Preconditions.checkNotNull(walletFile);
 
     String walletFilename = walletFile.getAbsolutePath();
@@ -322,9 +331,10 @@ public enum WalletManager implements WalletEventListener {
 
         if (walletFilename.endsWith(MBHD_AES_SUFFIX)) {
           // Read the encrypted file in and decrypt it.
-          byte[] encryptedWalletBytes = FileUtils.readFile(new File(walletFilename));
+          byte[] encryptedWalletBytes = org.multibit.hd.brit.utils.FileUtils.readFile(new File(walletFilename));
+          log.debug("Encrypted wallet bytes after load:\n" + Utils.bytesToHexString(encryptedWalletBytes));
 
-          KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt();
+          KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
           KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
 
           // Decrypt the wallet bytes
@@ -380,40 +390,6 @@ public enum WalletManager implements WalletEventListener {
   }
 
   /**
-   * Save the wallet
-   *
-   * @param wallet         wallet to save
-   * @param walletFilename location to save the wallet
-   */
-//  public void saveWallet(Wallet wallet, String walletFilename) {
-//
-//    File walletFile = new File(walletFilename);
-//
-//    // Save the wallet file
-//    try (FileOutputStream fis = new FileOutputStream(walletFile)) {
-//      if (wallet != null) {
-//        log.debug("Saving wallet file '{}' ...", walletFile.getAbsolutePath());
-//        if (3 == wallet.getVersion()) { // 3 = PROTOBUF_ENCRYPTED
-//
-//          // Save as a Wallet message with a mandatory extension
-//          // to prevent loading by older versions of multibit.
-//          walletProtobufSerializer.writeWallet(wallet, fis);
-//        } else {
-//          throw new WalletVersionException("Cannot save wallet '" + walletFilename
-//                  + "'. Its wallet version is '" + wallet.getVersion()
-//                  + "' but this version of MultiBit HD does not understand that format.");
-//        }
-//      }
-//
-//      // Must be OK to be here
-//      log.debug("Wallet file saved.");
-//
-//    } catch (IOException | UnsupportedOperationException e) {
-//      throw new WalletSaveException("Cannot save wallet '" + walletFilename, e);
-//    }
-//  }
-
-  /**
    * @param walletFile the wallet to test serialisation for
    * @return true if the wallet file specified is serialised (this format is no longer supported)
    */
@@ -460,7 +436,6 @@ public enum WalletManager implements WalletEventListener {
    * @throws IllegalStateException if wallet could not be created
    */
   public static File getWalletDirectory(String parentDirectory, String walletRoot) {
-
     String fullWalletDirectoryName = parentDirectory + File.separator + walletRoot;
     File walletDirectory = new File(fullWalletDirectoryName);
 
@@ -486,7 +461,6 @@ public enum WalletManager implements WalletEventListener {
    * @return A list of files of wallet directories
    */
   public List<File> findWalletDirectories(File directoryToSearch) {
-
     Preconditions.checkNotNull(directoryToSearch);
 
     File[] files = directoryToSearch.listFiles();
@@ -519,7 +493,6 @@ public enum WalletManager implements WalletEventListener {
    * @param currentWalletData The current wallet data
    */
   public void setCurrentWalletData(WalletData currentWalletData) {
-
     if (currentWalletData.getWallet() != null) {
 
       // Remove the previous WalletEventListener
@@ -536,7 +509,6 @@ public enum WalletManager implements WalletEventListener {
    * @return The current wallet file
    */
   public Optional<File> getCurrentWalletFile() {
-
     if (applicationDataDirectory != null && currentWalletData.isPresent()) {
 
       String walletFilename = applicationDataDirectory + File.separator + WALLET_DIRECTORY_PREFIX + SEPARATOR +
@@ -546,6 +518,53 @@ public enum WalletManager implements WalletEventListener {
     } else {
       return Optional.absent();
     }
+  }
 
+  public static File makeAESEncryptedCopyAndDeleteOriginal(File fileToEncrypt, CharSequence password) throws IOException {
+    log.error("password = {}", password);
+    if (password == null) {
+      log.warn("There is no password specified - the wallet is stored unencrypted");
+      return null;
+    } else {
+      KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
+      KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
+      // TODO - cache keyParameter
+
+      // Read in the newlySavedFile
+      byte[] walletBytes = org.multibit.hd.brit.utils.FileUtils.readFile(fileToEncrypt);
+
+      // Create an AES encoded version of the newlySavedFile, using the wallet password
+      byte[] encryptedWalletBytes = AESUtils.encrypt(walletBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
+
+      log.debug("Encrypted wallet bytes (original):\n" + Utils.bytesToHexString(encryptedWalletBytes));
+
+      // Check that the encryption is reversible
+      byte[] rebornBytes = AESUtils.decrypt(encryptedWalletBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
+
+      if (Arrays.equals(walletBytes, rebornBytes)) {
+        // Save encrypted bytes
+        File encryptedWalletFilename = new File(fileToEncrypt.getAbsoluteFile() + WalletManager.MBHD_AES_SUFFIX);
+        ByteArrayInputStream encryptedWalletByteArrayInputStream = new ByteArrayInputStream(encryptedWalletBytes);
+        FileOutputStream encryptedWalletOutputStream = new FileOutputStream(encryptedWalletFilename);
+        FileUtils.writeFile(encryptedWalletByteArrayInputStream, encryptedWalletOutputStream);
+
+        if (encryptedWalletFilename.length() == encryptedWalletBytes.length) {
+          FileUtils.secureDelete(fileToEncrypt);
+        } else {
+          // The saved file isn't the correct size - do not delete the original
+          return null;
+        }
+
+        return encryptedWalletFilename;
+      } else {
+        log.error("The wallet encryption was not reversible. Aborting. This means your wallet is being stored unencrypted");
+        return null;
+      }
+    }
+  }
+
+  public static Protos.ScryptParameters makeScryptParameters() {
+    Protos.ScryptParameters.Builder scryptParametersBuilder = Protos.ScryptParameters.newBuilder().setSalt(ByteString.copyFrom(SCRYPT_SALT));
+    return scryptParametersBuilder.build();
   }
 }

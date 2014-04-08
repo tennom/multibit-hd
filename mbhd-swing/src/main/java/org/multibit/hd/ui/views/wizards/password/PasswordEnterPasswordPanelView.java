@@ -11,6 +11,7 @@ import org.multibit.hd.core.concurrent.SafeExecutors;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.events.SecurityEvent;
 import org.multibit.hd.core.exceptions.ExceptionHandler;
+import org.multibit.hd.core.exceptions.WalletLoadException;
 import org.multibit.hd.core.managers.InstallationManager;
 import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.services.CoreServices;
@@ -70,8 +71,8 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
 
     // Configure the panel model
     final PasswordEnterPasswordPanelModel panelModel = new PasswordEnterPasswordPanelModel(
-      getPanelName(),
-      enterPasswordMaV.getModel()
+            getPanelName(),
+            enterPasswordMaV.getModel()
     );
     setPanelModel(panelModel);
 
@@ -84,9 +85,9 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
   public void initialiseContent(JPanel contentPanel) {
 
     contentPanel.setLayout(new MigLayout(
-      Panels.migXLayout(),
-      "[]", // Column constraints
-      "[]10[]" // Row constraints
+            Panels.migXLayout(),
+            "[]", // Column constraints
+            "[]10[]" // Row constraints
     ));
 
     contentPanel.add(Labels.newPasswordNote(), "wrap");
@@ -107,9 +108,9 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
 
     // Determine any events
     ViewEvents.fireWizardButtonEnabledEvent(
-      getPanelName(),
-      WizardButton.FINISH,
-      false
+            getPanelName(),
+            WizardButton.FINISH,
+            false
     );
 
   }
@@ -179,46 +180,24 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
     });
     Futures.addCallback(passwordFuture, new FutureCallback<Boolean>() {
 
-        @Override
-        public void onSuccess(Boolean result) {
+      @Override
+      public void onSuccess(Boolean result) {
 
-          // Check the result
-          if (result) {
+        // Check the result
+        if (result) {
 
-            // Maintain the spinner while the initialisation continues
+          // Maintain the spinner while the initialisation continues
 
-            // Trigger the deferred hide
-            ViewEvents.fireWizardDeferredHideEvent(getPanelName(), false);
+          // Trigger the deferred hide
+          ViewEvents.fireWizardDeferredHideEvent(getPanelName(), false);
 
-          } else {
+        } else {
 
-            // Wait just long enough to be annoying (anything below 2 seconds is comfortable)
-            Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+          // Wait just long enough to be annoying (anything below 2 seconds is comfortable)
+          Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 
-            // Failed
-            Sounds.playBeep();
-
-            // Ensure the view hides the spinner and enables components
-            SwingUtilities.invokeLater(new Runnable() {
-              @Override
-              public void run() {
-
-                getFinishButton().setEnabled(true);
-                getExitButton().setEnabled(true);
-                getRestoreButton().setEnabled(true);
-                enterPasswordMaV.getView().setSpinnerVisibility(false);
-
-                enterPasswordMaV.getView().requestInitialFocus();
-
-              }
-            });
-
-          }
-
-        }
-
-        @Override
-        public void onFailure(Throwable t) {
+          // Failed
+          Sounds.playBeep();
 
           // Ensure the view hides the spinner and enables components
           SwingUtilities.invokeLater(new Runnable() {
@@ -231,13 +210,35 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
               enterPasswordMaV.getView().setSpinnerVisibility(false);
 
               enterPasswordMaV.getView().requestInitialFocus();
+
             }
           });
 
-          // Should not have seen an error
-          ExceptionHandler.handleThrowable(t);
         }
+
       }
+
+      @Override
+      public void onFailure(Throwable t) {
+
+        // Ensure the view hides the spinner and enables components
+        SwingUtilities.invokeLater(new Runnable() {
+          @Override
+          public void run() {
+
+            getFinishButton().setEnabled(true);
+            getExitButton().setEnabled(true);
+            getRestoreButton().setEnabled(true);
+            enterPasswordMaV.getView().setSpinnerVisibility(false);
+
+            enterPasswordMaV.getView().requestInitialFocus();
+          }
+        });
+
+        // Should not have seen an error
+        ExceptionHandler.handleThrowable(t);
+      }
+    }
     );
 
     // Defer the hide operation
@@ -254,12 +255,16 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
     // TODO Adjust these checks when encrypted wallets are on the scene
     if (!"".equals(password) && !"x".equals(password)) {
 
-      // If a password has been entered, put it into the WalletData (so that it is available for address generation)
-      // TODO - remove when we have proper HD wallets  - won't need password for address generation
-      // TODO should be using WalletService
+      // If a password has been entered, put it into the WalletData (so that it is available for AESencryption of files)
 
       // Attempt to open the current wallet
-      WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(InstallationManager.getOrCreateApplicationDataDirectory(), password);
+      try {
+        WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(InstallationManager.getOrCreateApplicationDataDirectory(), password);
+      } catch (WalletLoadException wle) {
+        // Wallet did not load - probably bad password
+        log.debug("Wallet did not load. Error was {} {}", wle.getClass().getCanonicalName(), wle.getMessage());
+        return false;
+      }
 
       Optional<WalletData> walletDataOptional = WalletManager.INSTANCE.getCurrentWalletData();
       if (walletDataOptional.isPresent()) {
@@ -291,9 +296,9 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
 
     // Determine any events
     ViewEvents.fireWizardButtonEnabledEvent(
-      getPanelName(),
-      WizardButton.FINISH,
-      isFinishEnabled()
+            getPanelName(),
+            WizardButton.FINISH,
+            isFinishEnabled()
     );
 
   }
@@ -304,9 +309,9 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
   private boolean isFinishEnabled() {
 
     return !Strings.isNullOrEmpty(
-      getPanelModel().get()
-        .getEnterPasswordModel()
-        .getValue()
+            getPanelModel().get()
+                    .getEnterPasswordModel()
+                    .getValue()
     );
 
   }

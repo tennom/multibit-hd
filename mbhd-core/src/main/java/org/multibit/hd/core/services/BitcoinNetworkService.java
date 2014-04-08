@@ -179,7 +179,7 @@ public class BitcoinNetworkService extends AbstractService {
         walletData.getWallet().saveToFile(currentWalletFile);
         log.debug("Wallet save completed ok. Wallet size is " + currentWalletFile.length() + " bytes.");
 
-        BackupManager.INSTANCE.createRollingBackup(walletData);
+        BackupManager.INSTANCE.createRollingBackup(walletData, walletData.getPassword());
         BackupManager.INSTANCE.createLocalAndCloudBackup(walletId);
       } catch (IOException ioe) {
         log.error("Could not write wallet and backups for wallet with id '" + walletId + "' successfully. The error was '" + ioe.getMessage() + "'");
