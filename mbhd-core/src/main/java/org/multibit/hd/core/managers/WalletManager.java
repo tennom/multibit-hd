@@ -136,7 +136,6 @@ public enum WalletManager implements WalletEventListener {
    * @param applicationDataDirectory The directory in which to writeContacts and read wallets.
    */
   public void initialiseAndLoadWalletFromConfig(File applicationDataDirectory, CharSequence password) {
-    log.error("password = {}", password);
     Preconditions.checkNotNull(password);
     this.applicationDataDirectory = applicationDataDirectory;
 
@@ -195,7 +194,6 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException if there is already a wallet but the wallet version cannot be understood
    */
   public WalletData createWallet(String parentDirectoryName, byte[] seed, CharSequence password) throws WalletLoadException, WalletVersionException, IOException {
-    log.error("password = {}", password);
     Preconditions.checkNotNull(parentDirectoryName);
     Preconditions.checkNotNull(seed);
     Preconditions.checkNotNull(password);
@@ -315,7 +313,6 @@ public enum WalletManager implements WalletEventListener {
    * @throws WalletVersionException   if the wallet is a version that is not supported by MultiBit HD
    */
   public WalletData loadFromFile(File walletFile, CharSequence password) throws WalletLoadException, WalletVersionException {
-    log.error("password = {}", password);
     Preconditions.checkNotNull(walletFile);
     Preconditions.checkNotNull(password);
 
@@ -528,7 +525,6 @@ public enum WalletManager implements WalletEventListener {
   }
 
   public static File makeAESEncryptedCopyAndDeleteOriginal(File fileToEncrypt, CharSequence password) throws IOException {
-    log.error("password = {}", password);
     Preconditions.checkNotNull(password);
     KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
     KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);

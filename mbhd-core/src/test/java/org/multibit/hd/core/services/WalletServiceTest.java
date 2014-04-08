@@ -43,7 +43,7 @@ public class WalletServiceTest {
     byte[] seed1 = seedGenerator.convertToSeed(Bip39SeedPhraseGenerator.split(WalletIdTest.SEED_PHRASE_1));
     WalletId walletId = new WalletId(seed1);
 
-    WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(temporaryDirectory, null);
+    WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(temporaryDirectory, "no-password");
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
     WalletData walletData = WalletManager.INSTANCE.createWallet(temporaryDirectory.getAbsolutePath(), seed1, PASSWORD);
 
