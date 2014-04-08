@@ -317,6 +317,7 @@ public enum WalletManager implements WalletEventListener {
     Preconditions.checkNotNull(password);
 
     String walletFilename = walletFile.getAbsolutePath();
+    String walletFilenameNoAESSuffix = walletFilename;
 
     WalletId walletId = WalletId.parseWalletFilename(walletFilename);
 
@@ -333,6 +334,7 @@ public enum WalletManager implements WalletEventListener {
         InputStream inputStream;
 
         if (walletFilename.endsWith(MBHD_AES_SUFFIX)) {
+          walletFilenameNoAESSuffix = walletFilename.substring(0, walletFilename.length() - MBHD_AES_SUFFIX.length());
           // Read the encrypted file in and decrypt it.
           byte[] encryptedWalletBytes = org.multibit.hd.brit.utils.FileUtils.readFile(new File(walletFilename));
           log.debug("Encrypted wallet bytes after load:\n" + Utils.bytesToHexString(encryptedWalletBytes));
@@ -380,7 +382,7 @@ public enum WalletManager implements WalletEventListener {
       // + encrypts the wallet
       // + ensures rolling backups
       // + local/ cloud backups are also saved where necessary
-      wallet.autosaveToFile(walletFile, AUTOSAVE_DELAY, TimeUnit.MILLISECONDS, new WalletAutoSaveListener());
+      wallet.autosaveToFile(new File(walletFilenameNoAESSuffix), AUTOSAVE_DELAY, TimeUnit.MILLISECONDS, new WalletAutoSaveListener());
 
       return walletData;
 

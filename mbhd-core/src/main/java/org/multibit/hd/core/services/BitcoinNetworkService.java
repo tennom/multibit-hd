@@ -177,7 +177,9 @@ public class BitcoinNetworkService extends AbstractService {
       try {
         File currentWalletFile = WalletManager.INSTANCE.getCurrentWalletFile().get();
         walletData.getWallet().saveToFile(currentWalletFile);
-        log.debug("Wallet save completed ok. Wallet size is " + currentWalletFile.length() + " bytes.");
+        File encryptedAESCopy = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(currentWalletFile, walletData.getPassword());
+        log.debug("Created AES encrypted wallet as file '{}', size {}", encryptedAESCopy == null ? "null" : encryptedAESCopy.getAbsolutePath(),
+                encryptedAESCopy == null ? "null" : encryptedAESCopy.length());
 
         BackupManager.INSTANCE.createRollingBackup(walletData, walletData.getPassword());
         BackupManager.INSTANCE.createLocalAndCloudBackup(walletId);
