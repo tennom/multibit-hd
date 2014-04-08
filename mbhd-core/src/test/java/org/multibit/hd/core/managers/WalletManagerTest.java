@@ -30,6 +30,8 @@ import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.dto.WalletIdTest;
 import org.multibit.hd.core.services.CoreServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,13 +53,14 @@ public class WalletManagerTest {
 
   private WalletManager walletManager;
 
+  private static final Logger log = LoggerFactory.getLogger(WalletManagerTest.class);
+
   @Before
   public void setUp() throws Exception {
 
     // Start the core services
     CoreServices.main(null);
     walletManager = WalletManager.INSTANCE;
-
   }
 
   @Test
@@ -65,7 +68,7 @@ public class WalletManagerTest {
 
     // Create a random temporary directory to writeContacts the wallets
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
-    walletManager.initialiseAndLoadWalletFromConfig(temporaryDirectory, null);
+    walletManager.initialiseAndLoadWalletFromConfig(temporaryDirectory, WALLET_PASSWORD);
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
 
     // Create a wallet directory from a seed
@@ -80,9 +83,10 @@ public class WalletManagerTest {
       + walletId.toFormattedString();
     assertThat((new File(walletRootDirectoryPath)).mkdir()).isTrue();
     String newWalletFilename = walletRootDirectoryPath + File.separator + WalletManager.MBHD_WALLET_NAME;
+    String newWalletFilenameWithAES = walletRootDirectoryPath + File.separator + WalletManager.MBHD_WALLET_NAME + WalletManager.MBHD_AES_SUFFIX;
 
     KeyCrypterScrypt initialKeyCrypter = new KeyCrypterScrypt();
-    System.out.println("testCreateProtobufEncryptedWallet - InitialKeyCrypter = " + initialKeyCrypter);
+    log.debug("InitialKeyCrypter = " + initialKeyCrypter);
     Wallet newWallet = new Wallet(MainNetParams.get(), initialKeyCrypter);
     newWallet.setVersion(3); // PROTOBUF_ENCRYPTED
 
@@ -95,7 +99,7 @@ public class WalletManagerTest {
       fail();
     }
     System.arraycopy(newKey.getPrivKeyBytes(), 0, originalPrivateKeyBytes1, 0, 32);
-    System.out.println("testCreateProtobufEncryptedWallet - Original private key 1 = " + Utils.bytesToHexString(originalPrivateKeyBytes1));
+    log.debug("Original private key 1 = " + Utils.bytesToHexString(originalPrivateKeyBytes1));
 
     newKey = newKey.encrypt(newWallet.getKeyCrypter(), newWallet.getKeyCrypter().deriveKey(WALLET_PASSWORD));
     newWallet.addKey(newKey);
@@ -107,7 +111,7 @@ public class WalletManagerTest {
       fail();
     }
     System.arraycopy(newKey.getPrivKeyBytes(), 0, originalPrivateKeyBytes2, 0, 32);
-    System.out.println("testCreateProtobufEncryptedWallet - Original private key 2 = " + Utils.bytesToHexString(originalPrivateKeyBytes2));
+    log.debug("Original private key 2 = " + Utils.bytesToHexString(originalPrivateKeyBytes2));
 
     newKey = newKey.encrypt(newWallet.getKeyCrypter(), newWallet.getKeyCrypter().deriveKey(WALLET_PASSWORD));
     newWallet.addKey(newKey);
@@ -120,13 +124,13 @@ public class WalletManagerTest {
 
     // Save the wallet and read it back in again.
     newWallet.saveToFile(new File(newWalletFilename));
+    File encryptedNewWalletFile = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(new File(newWalletFilename), WALLET_PASSWORD);
 
     // Check the wallet and wallet info file exists.
-    File newWalletFile = new File(newWalletFilename);
-    assertThat(newWalletFile.exists()).isTrue();
+    assertThat(encryptedNewWalletFile.exists()).isTrue();
 
-    // Check wallet can be loaded and is still protobuf and encrypted.
-    WalletData rebornWalletData = walletManager.loadFromFile(newWalletFile, null);
+    // Check wallet can be loaded and is still AES encrypted, protobuf and encrypted.
+    WalletData rebornWalletData = walletManager.loadFromFile(encryptedNewWalletFile, WALLET_PASSWORD);
     assertThat(rebornWalletData).isNotNull();
     assertThat(rebornWalletData.getWallet().getBalance()).isEqualTo(BigInteger.ZERO);
     assertThat(rebornWalletData.getWallet().getKeys().size()).isEqualTo(2);
@@ -138,7 +142,7 @@ public class WalletManagerTest {
       assertThat(key.isEncrypted()).describedAs("Key is not encrypted when it should be").isTrue();
     }
 
-    System.out.println("Reborn KeyCrypter = " + rebornWalletData.getWallet().getKeyCrypter());
+    log.debug("Reborn KeyCrypter = " + rebornWalletData.getWallet().getKeyCrypter());
 
     // Decrypt the reborn wallet.
     rebornWalletData.getWallet().decrypt(rebornWalletData.getWallet().getKeyCrypter().deriveKey(WALLET_PASSWORD));
@@ -156,7 +160,7 @@ public class WalletManagerTest {
     if (firstRebornPrivateKeyBytes == null) {
       fail();
     }
-    System.out.println("FileHandlerTest - Reborn decrypted first private key = " + Utils.bytesToHexString(firstRebornPrivateKeyBytes));
+    log.debug("Reborn decrypted first private key = " + Utils.bytesToHexString(firstRebornPrivateKeyBytes));
 
     for (int i = 0; i < firstRebornPrivateKeyBytes.length; i++) {
       assertThat(originalPrivateKeyBytes1[i]).describedAs("Byte " + i + " of the reborn first private key did not match the original").isEqualTo(firstRebornPrivateKeyBytes[i]);
@@ -222,6 +226,7 @@ public class WalletManagerTest {
         + walletData2.getWalletId().toFormattedString()
         + File.separator
         + WalletManager.MBHD_WALLET_NAME
+        + WalletManager.MBHD_AES_SUFFIX
     );
 
     assertThat(expectedFile.exists()).isTrue();
