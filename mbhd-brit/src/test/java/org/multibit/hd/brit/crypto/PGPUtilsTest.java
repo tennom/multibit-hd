@@ -18,6 +18,7 @@ package org.multibit.hd.brit.crypto;
 
 import com.google.bitcoin.core.Utils;
 import com.google.common.base.Charsets;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.security.Security;
 import java.util.Arrays;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -55,7 +57,7 @@ public class PGPUtilsTest {
   }
 
   @Test
-  public void testPGPEncryptDecrypt() throws Exception {
+  public void testPGPEncryptDecryptFile() throws Exception {
     // Read the manually created public keyring in the test directory to find a public key suitable for encryption
     File publicKeyRingFile = makeFile(TEST_MATCHER_PUBLIC_KEYRING_FILE);
     log.debug("Loading public keyring from '" + publicKeyRingFile.getAbsolutePath() + "'");
@@ -92,7 +94,7 @@ public class PGPUtilsTest {
     File rebornPlainTextFile = new File(testDir.getAbsolutePath() + File.separator + "reborn.txt");
     FileOutputStream rebornPlainTextOutputStream = new FileOutputStream(rebornPlainTextFile);
 
-    PGPUtils.decryptFile(encryptedInputStream, rebornPlainTextOutputStream, secretKeyRingInputStream, TEST_DATA_PASSWORD);
+    PGPUtils.decrypt(encryptedInputStream, rebornPlainTextOutputStream, secretKeyRingInputStream, TEST_DATA_PASSWORD);
     assertThat(inputFile.length()).isEqualTo(rebornPlainTextFile.length());
 
     byte[] rebornBytes = FileUtils.readFile(rebornPlainTextFile);
@@ -108,6 +110,31 @@ public class PGPUtilsTest {
     assertThat(publicKey).isNotNull();
     log.debug("Loaded PGP public key :\nAlgorithm: " + publicKey.getAlgorithm() + ", bitStrength: "  + publicKey.getBitStrength()
       + ", fingerprint: " + Utils.bytesToHexString(publicKey.getFingerprint()));
+  }
+
+  @Test
+  public void testPGPEncryptDecryptStreams() throws Exception {
+    Security.addProvider(new BouncyCastleProvider());
+
+    File publicKeyFile = makeFile(TEST_MATCHER_PUBLIC_KEY_FILE);
+
+    log.debug("\nOriginal data = '" + EXAMPLE_TEXT + "'");
+
+    byte[] encrypted = PGPUtils.encryptBytes(EXAMPLE_TEXT.getBytes("UTF8"), PGPUtils.readPublicKey(new FileInputStream(publicKeyFile)), null);
+    ByteArrayInputStream encryptedByteArrayInputStream = new ByteArrayInputStream(encrypted);
+
+    File secretKeyRingFile = makeFile(TEST_MATCHER_SECRET_KEYRING_FILE);
+    FileInputStream secretKeyRingInputStream = new FileInputStream(secretKeyRingFile);
+
+    log.debug("\nEncrypted data = '" + new String(encrypted) + "'");
+
+    ByteArrayOutputStream decryptedByteArrayOutputStream = new ByteArrayOutputStream();
+
+    PGPUtils.decrypt(encryptedByteArrayInputStream, decryptedByteArrayOutputStream, secretKeyRingInputStream, TEST_DATA_PASSWORD);
+
+    log.debug("\nDecrypted data = '" + decryptedByteArrayOutputStream.toString() + "'");
+
+    assertThat(EXAMPLE_TEXT).isEqualTo(decryptedByteArrayOutputStream.toString());
   }
 
   /**

@@ -148,7 +148,7 @@ public enum WalletManager implements WalletEventListener {
    * If the wallet file already exists it is loaded and returned (and the input password is not used)
    *
    * @param seed     the seed used to initialise the wallet
-   * @param password to use to encrypt the wallet
+   * @param password to use to encryptBytes the wallet
    *
    * @return WalletData containing the wallet object and the walletId (used in storage etc)
    *
@@ -174,7 +174,7 @@ public enum WalletManager implements WalletEventListener {
    *
    * @param parentDirectoryName the name of the directory in which the wallet directory will be created (normally the application data directory)
    * @param seed                the seed used to initialise the wallet
-   * @param password            to use to encrypt the wallet
+   * @param password            to use to encryptBytes the wallet
    *
    * @return WalletData containing the wallet object and the walletId (used in storage etc)
    *

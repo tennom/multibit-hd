@@ -38,7 +38,7 @@ public interface Payer {
   /**
    * Encrypt the PayerRequest with the Matcher public PGP key
    *
-   * @param payerRequest The PayerRequest to encrypt
+   * @param payerRequest The PayerRequest to encryptBytes
    *
    * @return the EncryptedPayerRequest containing the encrypted payload
    *

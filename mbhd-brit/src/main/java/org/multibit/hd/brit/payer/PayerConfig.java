@@ -14,7 +14,7 @@ public class PayerConfig {
 
   /**
    * The PGP public key for the Matcher.
-   * This is used to encrypt traffic to the Matcher
+   * This is used to encryptBytes traffic to the Matcher
    */
   private PGPPublicKey matcherPublicKey;
 

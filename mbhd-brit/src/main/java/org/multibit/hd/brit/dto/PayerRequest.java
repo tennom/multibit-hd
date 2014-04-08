@@ -15,7 +15,7 @@ import java.util.Date;
  * <p>DTO to provide the following to BRIT API:</p>
  * <ul>
  * <li>The unencrypted version of the message sent by the Payer to the Matcher</li>
- * <li>Typically 'encrypt' is called and the EncryptedPayerRequest is actually sent on the wire</li>
+ * <li>Typically 'encryptBytes' is called and the EncryptedPayerRequest is actually sent on the wire</li>
  * </ul>
  *
  * @since 0.0.1

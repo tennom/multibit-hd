@@ -18,7 +18,7 @@ public class MatcherConfig {
   private File matcherSecretKeyringFile;
 
   /**
-   * The password to use to decrypt the secret key ring
+   * The password to use to decryptBytes the secret key ring
    */
   private char[] password;
 

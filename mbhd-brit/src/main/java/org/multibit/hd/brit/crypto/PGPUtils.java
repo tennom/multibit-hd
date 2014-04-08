@@ -4,11 +4,14 @@ import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Date;
 import java.util.Iterator;
+
 
 /**
  * <p>Utility to provide the following to BRIT API:</p>
@@ -34,7 +37,6 @@ public class PGPUtils {
    */
   @SuppressWarnings("unchecked")
   public static PGPPublicKey readPublicKey(InputStream in) throws IOException, PGPException {
-
     in = org.bouncycastle.openpgp.PGPUtil.getDecoderStream(in);
 
     PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(in);
@@ -47,7 +49,6 @@ public class PGPUtils {
     Iterator<PGPPublicKeyRing> rIt = pgpPub.getKeyRings();
 
     while (key == null && rIt.hasNext()) {
-
       PGPPublicKeyRing kRing = rIt.next();
       Iterator<PGPPublicKey> kIt = kRing.getPublicKeys();
       while (key == null && kIt.hasNext()) {
@@ -57,7 +58,6 @@ public class PGPUtils {
           key = k;
         }
       }
-
     }
 
     if (key == null) {
@@ -73,20 +73,30 @@ public class PGPUtils {
    *
    * @param keyIn input stream representing a key ring collection.
    * @param keyID keyID we want.
-   * @param pass  passphrase to decrypt secret key with.
-   *
+   * @param pass  password to decryptBytes secret key with.
    * @return The PGPPrivate key matching the keyID
-   *
    * @throws IOException
    * @throws PGPException
    * @throws NoSuchProviderException
    */
   public static PGPPrivateKey findPrivateKey(InputStream keyIn, long keyID, char[] pass)
-    throws IOException, PGPException, NoSuchProviderException {
+          throws IOException, PGPException, NoSuchProviderException {
 
     PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(
-      org.bouncycastle.openpgp.PGPUtil.getDecoderStream(keyIn));
+            org.bouncycastle.openpgp.PGPUtil.getDecoderStream(keyIn));
 
+    PGPSecretKey pgpSecKey = pgpSec.getSecretKey(keyID);
+
+    if (pgpSecKey == null) {
+      return null;
+    }
+
+    return pgpSecKey.extractPrivateKey(pass, "BC");
+  }
+
+  private static PGPPrivateKey findPrivateKey(
+          PGPSecretKeyRingCollection pgpSec, long keyID, char[] pass)
+          throws PGPException, NoSuchProviderException {
     PGPSecretKey pgpSecKey = pgpSec.getSecretKey(keyID);
 
     if (pgpSecKey == null) {
@@ -103,12 +113,13 @@ public class PGPUtils {
    * @param decryptedOutputStream The output stream
    * @param keyInputStream        The key input stream
    * @param password              The password
-   *
-   * @throws Exception TODO This is too general (many exceptions wrapped up into one)
+   * @throws IOException
+   * @throws NoSuchProviderException
+   * @throws PGPException
    */
   @SuppressWarnings("unchecked")
-  public static void decryptFile(InputStream encryptedInputStream, OutputStream decryptedOutputStream, InputStream keyInputStream, char[] password)
-    throws Exception {
+  public static void decrypt(InputStream encryptedInputStream, OutputStream decryptedOutputStream, InputStream keyInputStream, char[] password)
+    throws IOException, NoSuchProviderException, PGPException {
 
     Security.addProvider(new BouncyCastleProvider());
 
@@ -183,7 +194,6 @@ public class PGPUtils {
    * @param armoredOut The output stream
    * @param inputFile  The input file
    * @param encKey     The PGP public key for encrypting
-   *
    * @throws IOException
    * @throws NoSuchProviderException
    * @throws PGPException
@@ -191,7 +201,7 @@ public class PGPUtils {
   public static void encryptFile(OutputStream armoredOut,
                                  File inputFile,
                                  PGPPublicKey encKey)
-    throws IOException, NoSuchProviderException, PGPException {
+          throws IOException, NoSuchProviderException, PGPException {
 
     Security.addProvider(new BouncyCastleProvider());
 
@@ -203,19 +213,19 @@ public class PGPUtils {
     final PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
 
     PGPUtil.writeFileToLiteralData(
-      comData.open(baos),
-      PGPLiteralData.BINARY,
-      inputFile
+            comData.open(baos),
+            PGPLiteralData.BINARY,
+            inputFile
     );
 
     comData.close();
 
     final PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(
-      PGPEncryptedData.CAST5,
-      // Always perform an integrity check
-      true,
-      new SecureRandom(),
-      "BC"
+            PGPEncryptedData.CAST5,
+            // Always perform an integrity check
+            true,
+            new SecureRandom(),
+            "BC"
     );
 
     encryptedDataGenerator.addMethod(encKey);
@@ -231,5 +241,74 @@ public class PGPUtils {
     armoredOut.close();
   }
 
+  /**
+   * Simple PGP encryption between byte[].
+   *
+   * @param clearData  The test to be encrypted
+   * @param encKey     The PGP public key to use for encryption
+   * @param fileName   File name. This is used in the Literal Data Packet (tag 11)
+   *                   which is really only important if the data is to be related to
+   *                   a file to be recovered later. Because this routine does not
+   *                   know the source of the information, the caller can set
+   *                   something here for file name use that will be carried. If this
+   *                   routine is being used to encryptBytes SOAP MIME bodies, for
+   *                   example, use the file name from the MIME type, if applicable.
+   *                   Or anything else appropriate.
+   * @return encrypted data.
+   * @throws IOException
+   * @throws PGPException
+   * @throws NoSuchProviderException
+   */
+  public static byte[] encryptBytes(byte[] clearData, PGPPublicKey encKey,
+                                    @Nullable String fileName)
+          throws IOException, PGPException, NoSuchProviderException {
+    if (fileName == null) {
+      fileName = PGPLiteralData.CONSOLE;
+    }
 
+    Security.addProvider(new BouncyCastleProvider());
+
+    ByteArrayOutputStream encOut = new ByteArrayOutputStream();
+
+    OutputStream out = new ArmoredOutputStream(encOut);
+
+    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+
+    PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(
+            PGPCompressedDataGenerator.ZIP);
+    OutputStream cos = comData.open(bOut); // open it with the final
+    // destination
+    PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
+
+    // we want to generate compressed data. This might be a user option
+    // later,
+    // in which case we would pass in bOut.
+    OutputStream pOut = lData.open(cos, // the compressed output stream
+            PGPLiteralData.BINARY, fileName, // "filename" to store
+            clearData.length, // length of clear data
+            new Date() // current time
+    );
+    pOut.write(clearData);
+
+    lData.close();
+    comData.close();
+
+    PGPEncryptedDataGenerator cPk = new PGPEncryptedDataGenerator(
+            PGPEncryptedData.CAST5, true, new SecureRandom(),
+            "BC");
+
+    cPk.addMethod(encKey);
+
+    byte[] bytes = bOut.toByteArray();
+
+    OutputStream cOut = cPk.open(out, bytes.length);
+
+    cOut.write(bytes); // obtain the actual bytes from the compressed stream
+
+    cOut.close();
+
+    out.close();
+
+    return encOut.toByteArray();
+  }
 }

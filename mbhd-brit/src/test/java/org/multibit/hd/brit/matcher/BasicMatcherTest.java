@@ -85,7 +85,7 @@ public class BasicMatcherTest {
     // Create a matcher
     Matcher matcher = createTestMatcher();
 
-    // The Matcher can decrypt the EncryptedPaymentRequest using its PGP secret key
+    // The Matcher can decryptBytes the EncryptedPaymentRequest using its PGP secret key
     PayerRequest matcherPayerRequest = matcher.decryptPayerRequest(encryptedPayerRequest);
 
     // The decrypted payment request should be the same as the original
@@ -101,7 +101,7 @@ public class BasicMatcherTest {
 
     // In real life the encryptedMatcherResponse is transported from the Matcher to the Payer here
 
-    // The payer can decrypt the encryptedMatcherResponse
+    // The payer can decryptBytes the encryptedMatcherResponse
     // as it knows the BRITWalletId and session id
     MatcherResponse payersMatcherResponse = payer.decryptMatcherResponse(encryptedMatcherResponse);
     assertThat(payersMatcherResponse).isNotNull();

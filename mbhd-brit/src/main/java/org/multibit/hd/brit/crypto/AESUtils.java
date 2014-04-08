@@ -67,7 +67,7 @@ public class AESUtils {
 
       return encryptedBytes;
     } catch (Exception e) {
-      throw new KeyCrypterException("Could not encrypt bytes.", e);
+      throw new KeyCrypterException("Could not encryptBytes bytes.", e);
     }
 
   }
@@ -75,7 +75,7 @@ public class AESUtils {
   /**
    * Decrypt bytes previously encrypted with this class.
    *
-   * @param encryptedBytes       The encrypted bytes required to decrypt
+   * @param encryptedBytes       The encrypted bytes required to decryptBytes
    * @param aesKey               The AES key to use for decryption
    * @param initialisationVector The initialisationVector to use whilst decrypting
    *
@@ -108,7 +108,7 @@ public class AESUtils {
 
       return decryptedBytes;
     } catch (Exception e) {
-      throw new KeyCrypterException("Could not decrypt bytes", e);
+      throw new KeyCrypterException("Could not decryptBytes bytes", e);
     }
   }
 

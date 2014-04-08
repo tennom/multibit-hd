@@ -73,14 +73,14 @@ public class BasicMatcher implements Matcher {
 
   @Override
   public PayerRequest decryptPayerRequest(EncryptedPayerRequest encryptedPayerRequest) throws Exception {
-    log.debug("Attempting to decrypt payload:\n{}\n", new String(encryptedPayerRequest.getPayload(), Charsets.UTF_8));
+    log.debug("Attempting to decryptBytes payload:\n{}\n", new String(encryptedPayerRequest.getPayload(), Charsets.UTF_8));
 
     ByteArrayInputStream serialisedPayerRequestEncryptedInputStream = new ByteArrayInputStream(encryptedPayerRequest.getPayload());
 
     ByteArrayOutputStream serialisedPayerRequestOutputStream = new ByteArrayOutputStream(1024);
 
-    // PGP encrypt the file
-    PGPUtils.decryptFile(serialisedPayerRequestEncryptedInputStream, serialisedPayerRequestOutputStream,
+    // PGP encryptBytes the file
+    PGPUtils.decrypt(serialisedPayerRequestEncryptedInputStream, serialisedPayerRequestOutputStream,
             new FileInputStream(matcherConfig.getMatcherSecretKeyringFile()), matcherConfig.getPassword());
 
     return PayerRequest.parse(serialisedPayerRequestOutputStream.toByteArray());
@@ -160,7 +160,7 @@ public class BasicMatcher implements Matcher {
     // Stretch the 20 byte britWalletId to 32 bytes (256 bits)
     byte[] stretchedBritWalletId = MessageDigest.getInstance("SHA-256").digest(lastPayerRequest.getBRITWalletId().getBytes());
 
-    // Create an AES key from the stretchedBritWalletId and the sessionKey and decrypt the payload
+    // Create an AES key from the stretchedBritWalletId and the sessionKey and decryptBytes the payload
     byte[] encryptedMatcherResponsePayload = AESUtils.encrypt(matcherResponse.serialise(), new KeyParameter(stretchedBritWalletId), lastPayerRequest.getSessionKey());
 
     return new EncryptedMatcherResponse(encryptedMatcherResponsePayload);

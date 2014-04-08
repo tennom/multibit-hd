@@ -8,12 +8,11 @@ import org.multibit.hd.brit.crypto.PGPUtils;
 import org.multibit.hd.brit.dto.*;
 import org.multibit.hd.brit.exceptions.MatcherResponseException;
 import org.multibit.hd.brit.exceptions.PayerRequestException;
-import org.multibit.hd.brit.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.params.KeyParameter;
 
-import java.io.*;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -61,28 +60,14 @@ public class BasicPayer implements Payer {
       // Serialise the contents of the payerRequest
       byte[] serialisedPayerRequest = payerRequest.serialise();
 
-      ByteArrayOutputStream encryptedBytesOutputStream = new ByteArrayOutputStream(1024);
+      // PGP encryptBytes the file
+      byte[] encryptedBytes = PGPUtils.encryptBytes(serialisedPayerRequest, payerConfig.getMatcherPublicKey(), null);
 
-      // TODO Can we change PGPUtils to accept a stream rather than a file to reduce IO vulnerability?
-      // Make a temporary file containing the serialised payer request
-      File tempFile = File.createTempFile("req", "tmp");
+      log.debug("Payload after encryption is :\n{}\n" ,new String(encryptedBytes, Charsets.UTF_8));
 
-      // Write serialised payerRequest to the temporary file
-      FileUtils.writeFile(new ByteArrayInputStream(serialisedPayerRequest), new FileOutputStream(tempFile));
-
-      // PGP encrypt the file
-      PGPUtils.encryptFile(encryptedBytesOutputStream, tempFile, payerConfig.getMatcherPublicKey());
-
-      // TODO Secure file delete (or avoid File altogether)
-      if (!tempFile.delete()) {
-        throw new IOException("Could not delete file + '" + tempFile.getAbsolutePath() + "'");
-      }
-
-      log.debug("Payload after encryption is :\n{}\n" ,new String(encryptedBytesOutputStream.toByteArray(), Charsets.UTF_8));
-
-      return new EncryptedPayerRequest(encryptedBytesOutputStream.toByteArray());
+      return new EncryptedPayerRequest(encryptedBytes);
     } catch (IOException | NoSuchProviderException | PGPException e) {
-      throw new PayerRequestException("Could not encrypt PayerRequest", e);
+      throw new PayerRequestException("Could not encryptBytes PayerRequest", e);
     }
   }
 
@@ -92,13 +77,13 @@ public class BasicPayer implements Payer {
       // Stretch the 20 byte britWalletId to 32 bytes (256 bits)
       byte[] stretchedBritWalletId = MessageDigest.getInstance("SHA-256").digest(britWalletId.getBytes());
 
-      // Create an AES key from the stretchedBritWalletId and the sessionKey and decrypt the payload
+      // Create an AES key from the stretchedBritWalletId and the sessionKey and decryptBytes the payload
       byte[] serialisedMatcherResponse = AESUtils.decrypt(encryptedMatcherResponse.getPayload(), new KeyParameter(stretchedBritWalletId), sessionKey);
 
       // Parse the serialised MatcherResponse
       return MatcherResponse.parse(serialisedMatcherResponse);
     } catch (NoSuchAlgorithmException | MatcherResponseException e) {
-      throw new MatcherResponseException("Could not decrypt MatcherResponse", e);
+      throw new MatcherResponseException("Could not decryptBytes MatcherResponse", e);
     }
   }
 }

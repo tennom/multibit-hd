@@ -29,6 +29,9 @@ public class FileUtils {
   }
 
   public static byte[] readFile(File file) throws IOException {
+    // Get the size of the file
+    long length = file.length();
+
     if (file == null) {
       throw new IllegalArgumentException("File must be provided");
     }
@@ -37,25 +40,28 @@ public class FileUtils {
       throw new IOException("File '" + file.getAbsolutePath() + "' is too large to input");
     }
 
-    byte[] buffer = new byte[(int) file.length()];
-    InputStream ios = null;
-    try {
-      ios = new FileInputStream(file);
-      if (ios.read(buffer) == -1) {
-        throw new IOException("EOF reached while trying to read the whole file");
-      }
-    } finally {
-      try {
-        if (ios != null) {
-          ios.close();
-        }
-      } catch (IOException e) {
-        log.error(e.getClass().getName() + " " + e.getMessage());
-      }
-    }
+    InputStream is = new FileInputStream(file);
 
-    return buffer;
-  }
+     // Create the byte array to hold the data
+     byte[] bytes = new byte[(int) length];
+
+     // Read in the bytes
+     int offset = 0;
+     int numRead;
+     while (offset < bytes.length
+             && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+       offset += numRead;
+     }
+
+     // Ensure all the bytes have been read in
+     if (offset < bytes.length) {
+       throw new IOException("Could not completely read file " + file.getName());
+     }
+
+     // Close the input stream and return bytes
+     is.close();
+     return bytes;
+   }
 
   /**
    * Write a file from the inputstream to the outputstream

@@ -28,7 +28,7 @@ public interface Matcher {
   /**
    * Decrypt a PGP encrypted PayerRequest using the PGP private key in the Matcher's MatcherConfig
    *
-   * @param encryptedPayerRequest the encyptedPayerRequest to decrypt
+   * @param encryptedPayerRequest the encyptedPayerRequest to decryptBytes
    *
    * @return An unencrypted PayerRequest
    *
