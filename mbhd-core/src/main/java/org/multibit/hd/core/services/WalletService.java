@@ -560,7 +560,7 @@ public class WalletService {
    */
   public void readPayments() throws PaymentsLoadException {
 
-    Preconditions.checkNotNull(backingStoreFile, "There is no backingStoreFile. Please initialise WalletService.");
+    Preconditions.checkNotNull(backingStoreFile, "There is no backingStoreFile. Please initialiseAndLoadWalletFromConfig WalletService.");
 
     try (FileInputStream fis = new FileInputStream(backingStoreFile)) {
 
@@ -595,7 +595,7 @@ public class WalletService {
    */
   public void writePayments() throws PaymentsSaveException {
 
-    Preconditions.checkNotNull(backingStoreFile, "There is no backingStoreFile. Please initialise WalletService.");
+    Preconditions.checkNotNull(backingStoreFile, "There is no backingStoreFile. Please initialiseAndLoadWalletFromConfig WalletService.");
 
     try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
 

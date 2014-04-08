@@ -84,7 +84,7 @@ public abstract class AbstractScreenView<M extends ScreenModel> {
   }
 
   /**
-   * <p>Called when the screen is first created to initialise the model and subsequently on a locale change event.</p>
+   * <p>Called when the screen is first created to initialiseAndLoadWalletFromConfig the model and subsequently on a locale change event.</p>
    *
    * <p>This is called before {@link AbstractScreenView#initialiseScreenViewPanel()}</p>
    *
@@ -110,7 +110,7 @@ public abstract class AbstractScreenView<M extends ScreenModel> {
   }
 
   /**
-   * <p>Called when the screen is first created to initialise the panel and subsequently on a locale change event.</p>
+   * <p>Called when the screen is first created to initialiseAndLoadWalletFromConfig the panel and subsequently on a locale change event.</p>
    *
    * <p>This is called after {@link AbstractScreenView#newScreenModel()}</p>
    *

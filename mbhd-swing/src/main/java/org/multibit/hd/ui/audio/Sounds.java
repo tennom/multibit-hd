@@ -76,7 +76,7 @@ public class Sounds {
    */
   private static void play(String name) {
 
-    Preconditions.checkState(allSounds.containsKey(name), "'" + name + "' must be present (did you initialise?)");
+    Preconditions.checkState(allSounds.containsKey(name), "'" + name + "' must be present (did you initialiseAndLoadWalletFromConfig?)");
 
     byte[] sound = allSounds.get(name);
 

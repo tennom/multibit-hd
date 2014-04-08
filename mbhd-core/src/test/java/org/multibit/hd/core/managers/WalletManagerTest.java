@@ -65,7 +65,7 @@ public class WalletManagerTest {
 
     // Create a random temporary directory to writeContacts the wallets
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
-    walletManager.initialise(temporaryDirectory);
+    walletManager.initialiseAndLoadWalletFromConfig(temporaryDirectory, null);
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
 
     // Create a wallet directory from a seed
@@ -119,14 +119,14 @@ public class WalletManagerTest {
     }
 
     // Save the wallet and read it back in again.
-    walletManager.saveWallet(newWallet, newWalletFilename);
+    newWallet.saveToFile(new File(newWalletFilename));
 
     // Check the wallet and wallet info file exists.
     File newWalletFile = new File(newWalletFilename);
     assertThat(newWalletFile.exists()).isTrue();
 
     // Check wallet can be loaded and is still protobuf and encrypted.
-    WalletData rebornWalletData = walletManager.loadFromFile(newWalletFile);
+    WalletData rebornWalletData = walletManager.loadFromFile(newWalletFile, null);
     assertThat(rebornWalletData).isNotNull();
     assertThat(rebornWalletData.getWallet().getBalance()).isEqualTo(BigInteger.ZERO);
     assertThat(rebornWalletData.getWallet().getKeys().size()).isEqualTo(2);

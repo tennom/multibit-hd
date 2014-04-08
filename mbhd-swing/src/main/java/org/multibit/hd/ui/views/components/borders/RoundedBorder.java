@@ -60,7 +60,7 @@ public class RoundedBorder extends AbstractBorder {
   @Override
   public Insets getBorderInsets(Component c, Insets insets) {
 
-    // Use this insets to initialise the provided
+    // Use this insets to initialiseAndLoadWalletFromConfig the provided
     insets.top = this.insets.top;
     insets.left = this.insets.left;
     insets.bottom = this.insets.bottom;

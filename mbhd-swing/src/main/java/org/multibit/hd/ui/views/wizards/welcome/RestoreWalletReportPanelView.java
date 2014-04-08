@@ -229,13 +229,17 @@ public class RestoreWalletReportPanelView extends AbstractWizardPanelView<Welcom
       File walletRootDirectory = WalletManager.getWalletDirectory(InstallationManager.getOrCreateApplicationDataDirectory().getAbsolutePath(), WalletManager.createWalletRoot(loadedWalletId));
       String walletFilename = walletRootDirectory + File.separator + WalletManager.MBHD_WALLET_NAME;
 
+      // TODO get password from PGP encrypted saved version
+      CharSequence password = null;
+
+      throw new UnsupportedOperationException("The recovery of the password from the seed encrypted file is not done yet!");
       // TODO need to shut down everything beforehand ???
-      WalletManager.INSTANCE.loadFromFile(new File(walletFilename));
-
-      // Synchronize wallet
-      CoreServices.getOrCreateBitcoinNetworkService().start();
-
-      return true;
+//      WalletManager.INSTANCE.loadFromFile(new File(walletFilename), password);
+//
+//      // Synchronize wallet
+//      CoreServices.getOrCreateBitcoinNetworkService().start();
+//
+//      return true;
     } catch (IOException ioe) {
       log.error("Failed to restore wallet. Error was '" + ioe.getMessage() + "'.");
       return false;

@@ -62,7 +62,7 @@ public class DetailView {
   }
 
   /**
-   * Populate all the available screens but do not initialise them
+   * Populate all the available screens but do not initialiseAndLoadWalletFromConfig them
    */
   private void populateScreenViewMap() {
 
@@ -70,7 +70,7 @@ public class DetailView {
 
       AbstractScreenView view = Screens.newScreen(screen);
 
-      // Keep track of the view instances but don't initialise them
+      // Keep track of the view instances but don't initialiseAndLoadWalletFromConfig them
       screenViewMap.put(screen, view);
 
     }

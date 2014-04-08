@@ -9,15 +9,16 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.bitcoinj.wallet.Protos;
+import org.multibit.hd.brit.crypto.AESUtils;
 import org.multibit.hd.brit.extensions.MatcherResponseWalletExtension;
 import org.multibit.hd.brit.extensions.SendFeeDtoWalletExtension;
+import org.multibit.hd.brit.utils.FileUtils;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.events.CoreEvents;
 import org.multibit.hd.core.events.TransactionSeenEvent;
 import org.multibit.hd.core.exceptions.WalletLoadException;
-import org.multibit.hd.core.exceptions.WalletSaveException;
 import org.multibit.hd.core.exceptions.WalletVersionException;
 import org.multibit.hd.core.services.BitcoinNetworkService;
 import org.slf4j.Logger;
@@ -99,7 +100,7 @@ public enum WalletManager implements WalletEventListener {
   // The format of the wallet directories is WALLET_DIRECTORY_PREFIX + a wallet id.
   // A walletid is 5 groups of 4 bytes in lowercase hex, with a "-' separator e.g. mbhd-11111111-22222222-33333333-44444444-55555555
   public static final String REGEX_FOR_WALLET_DIRECTORY = "^" + WALLET_DIRECTORY_PREFIX + SEPARATOR + "[0-9a-f]{8}"
-    + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}$";
+          + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}" + SEPARATOR + "[0-9a-f]{8}$";
 
   /**
    * The wallet version number for protobuf encrypted wallets - compatible with MultiBit
@@ -108,19 +109,27 @@ public enum WalletManager implements WalletEventListener {
 
   public static final String MBHD_WALLET_PREFIX = "mbhd";
   public static final String MBHD_WALLET_SUFFIX = ".wallet";
+  public static final String MBHD_AES_SUFFIX = ".aes";
   public static final String MBHD_WALLET_NAME = MBHD_WALLET_PREFIX + MBHD_WALLET_SUFFIX;
+  public static final String MBHD_WALLET_NAME_WITH_AES_SUFFIX = MBHD_WALLET_NAME + MBHD_AES_SUFFIX;
 
   private File applicationDataDirectory;
 
   private Optional<WalletData> currentWalletData = Optional.absent();
 
   /**
-   * TODO initialise() may be the wrong name here - this is more of a load wallet from configuration with password
+   * The initialisation vector to use for AES encryption of output files (such as wallets)
+   * There is no particular significance to the value of these bytes
+   */
+  public static final byte[] AES_INITIALISATION_VECTOR = new byte[]{(byte) 0xa3, (byte) 0x44, (byte) 0x39, (byte) 0x1f, (byte) 0x53, (byte) 0x83, (byte) 0x11,
+          (byte) 0xb3, (byte) 0x29, (byte) 0x54, (byte) 0x86, (byte) 0x16, (byte) 0xc4, (byte) 0x89, (byte) 0x72, (byte) 0x3e};
+
+  /**
    * Initialise enum, loadContacts up the available wallets and find the current wallet
    *
    * @param applicationDataDirectory The directory in which to writeContacts and read wallets.
    */
-  public void initialise(File applicationDataDirectory) {
+  public void initialiseAndLoadWalletFromConfig(File applicationDataDirectory, CharSequence password) {
 
     this.applicationDataDirectory = applicationDataDirectory;
 
@@ -133,7 +142,7 @@ public enum WalletManager implements WalletEventListener {
     if (!walletDirectories.isEmpty()) {
 
       String walletFilename = walletDirectories.get(0) + File.separator + MBHD_WALLET_NAME;
-      WalletData walletData = loadFromFile(new File(walletFilename));
+      WalletData walletData = loadFromFile(new File(walletFilename), password);
       currentWalletData = Optional.of(walletData);
     } else {
       currentWalletData = Optional.absent();
@@ -147,11 +156,9 @@ public enum WalletManager implements WalletEventListener {
    * The name of the wallet file is derived from the seed.
    * If the wallet file already exists it is loaded and returned (and the input password is not used)
    *
-   * @param seed     the seed used to initialise the wallet
+   * @param seed     the seed used to initialiseAndLoadWalletFromConfig the wallet
    * @param password to use to encryptBytes the wallet
-   *
    * @return WalletData containing the wallet object and the walletId (used in storage etc)
-   *
    * @throws IllegalStateException  if applicationDataDirectory is incorrect
    * @throws WalletLoadException    if there is already a simple wallet created but it could not be loaded
    * @throws WalletVersionException if there is already a simple wallet but the wallet version cannot be understood
@@ -173,11 +180,9 @@ public enum WalletManager implements WalletEventListener {
    * Autosave is hooked up so that the wallet is changed on modification
    *
    * @param parentDirectoryName the name of the directory in which the wallet directory will be created (normally the application data directory)
-   * @param seed                the seed used to initialise the wallet
+   * @param seed                the seed used to initialiseAndLoadWalletFromConfig the wallet
    * @param password            to use to encryptBytes the wallet
-   *
    * @return WalletData containing the wallet object and the walletId (used in storage etc)
-   *
    * @throws IllegalStateException  if applicationDataDirectory is incorrect
    * @throws WalletLoadException    if there is already a wallet created but it could not be loaded
    * @throws WalletVersionException if there is already a wallet but the wallet version cannot be understood
@@ -194,7 +199,7 @@ public enum WalletManager implements WalletEventListener {
     File walletFile = new File(walletDirectory.getAbsolutePath() + File.separator + MBHD_WALLET_NAME);
     if (walletFile.exists()) {
       // There is already a wallet created with this root - if so loadContacts it and return that
-      walletDataToReturn = loadFromFile(walletFile);
+      walletDataToReturn = loadFromFile(walletFile, password);
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
       }
@@ -226,7 +231,7 @@ public enum WalletManager implements WalletEventListener {
       walletToReturn.autosaveToFile(walletFile, AUTOSAVE_DELAY, TimeUnit.MILLISECONDS, new WalletAutoSaveListener());
 
       // Save it now to ensure it is on the disk
-      saveWallet(walletToReturn, walletFile.getAbsolutePath());
+      walletToReturn.saveToFile(walletFile);
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
       }
@@ -276,7 +281,6 @@ public enum WalletManager implements WalletEventListener {
    * Ensure that the seed is within the range of the bitcoin EC group
    *
    * @param seedAsBigInteger the seed - converted to a BigInteger
-   *
    * @return the seed, guaranteed to be within the Bitcoin EC group range
    */
   private BigInteger moduloSeedByECGroupSize(BigInteger seedAsBigInteger) {
@@ -290,15 +294,13 @@ public enum WalletManager implements WalletEventListener {
   /**
    * Load up a Wallet from a specified wallet file.
    *
-   * @param walletFile The file containing the wallet to loadContacts
-   *
+   * @param walletFile The file containing the wallet to load
    * @return Wallet - the loaded wallet
-   *
    * @throws IllegalArgumentException if wallet file is null
-   * @throws WalletLoadException
-   * @throws WalletVersionException
+   * @throws WalletLoadException      if wallet does not load
+   * @throws WalletVersionException   if the wallet is a version that is not supported by MultiBit HD
    */
-  public WalletData loadFromFile(File walletFile) throws WalletLoadException, WalletVersionException {
+  public WalletData loadFromFile(File walletFile, CharSequence password) throws WalletLoadException, WalletVersionException {
 
     Preconditions.checkNotNull(walletFile);
 
@@ -310,13 +312,32 @@ public enum WalletManager implements WalletEventListener {
       if (isWalletSerialised(walletFile)) {
         // Serialised wallets are no longer supported.
         throw new WalletLoadException("Could not loadContacts wallet '" + walletFilename
-          + "'. Serialized wallets are no longer supported.");
+                + "'. Serialized wallets are no longer supported.");
       }
 
       Wallet wallet;
+      FileInputStream fileInputStream = null;
+      try {
+        InputStream inputStream;
 
-      try (FileInputStream fileInputStream = new FileInputStream(walletFile); InputStream stream = new BufferedInputStream(fileInputStream);) {
-        Protos.Wallet walletProto = WalletProtobufSerializer.parseToProto(stream);
+        if (walletFilename.endsWith(MBHD_AES_SUFFIX)) {
+          // Read the encrypted file in and decrypt it.
+          byte[] encryptedWalletBytes = FileUtils.readFile(new File(walletFilename));
+
+          KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt();
+          KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
+
+          // Decrypt the wallet bytes
+          byte[] decryptedBytes = AESUtils.decrypt(encryptedWalletBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
+
+          inputStream = new ByteArrayInputStream(decryptedBytes);
+        } else {
+          // Not encrypted wallet
+          fileInputStream = new FileInputStream(walletFile);
+          inputStream = new BufferedInputStream(fileInputStream);
+        }
+
+        Protos.Wallet walletProto = WalletProtobufSerializer.parseToProto(inputStream);
 
         wallet = new Wallet(NetworkParameters.fromID(NetworkParameters.ID_MAINNET));
         wallet.addExtension(new SendFeeDtoWalletExtension());
@@ -330,6 +351,10 @@ public enum WalletManager implements WalletEventListener {
       } catch (Exception e) {
         log.error(e.getClass().getCanonicalName() + " " + e.getMessage());
         throw new WalletLoadException(e.getMessage(), e);
+      } finally {
+        if (fileInputStream != null) {
+          fileInputStream.close();
+        }
       }
 
       WalletData walletData = new WalletData(walletId, wallet);
@@ -337,7 +362,10 @@ public enum WalletManager implements WalletEventListener {
 
       // Set up autosave on the wallet.
       // This ensures the wallet is saved on modification
-      // The listener has a 'post save' callback which ensures rolling backups and local/ cloud backups are also saved where necessary
+      // The listener has a 'post save' callback which:
+      // + encrypts the wallet
+      // + ensures rolling backups
+      // + local/ cloud backups are also saved where necessary
       wallet.autosaveToFile(walletFile, AUTOSAVE_DELAY, TimeUnit.MILLISECONDS, new WalletAutoSaveListener());
 
       return walletData;
@@ -353,42 +381,40 @@ public enum WalletManager implements WalletEventListener {
 
   /**
    * Save the wallet
-   * TODO would be nice to remove this and just use the vanilla wallet .saveFile
    *
    * @param wallet         wallet to save
    * @param walletFilename location to save the wallet
    */
-  public void saveWallet(Wallet wallet, String walletFilename) {
-
-    File walletFile = new File(walletFilename);
-
-    // Save the wallet file
-    try (FileOutputStream fis = new FileOutputStream(walletFile)) {
-      if (wallet != null) {
-        log.debug("Saving wallet file '{}' ...", walletFile.getAbsolutePath());
-        if (3 == wallet.getVersion()) { // 3 = PROTOBUF_ENCRYPTED
-
-          // Save as a Wallet message with a mandatory extension
-          // to prevent loading by older versions of multibit.
-          walletProtobufSerializer.writeWallet(wallet, fis);
-        } else {
-          throw new WalletVersionException("Cannot save wallet '" + walletFilename
-            + "'. Its wallet version is '" + wallet.getVersion()
-            + "' but this version of MultiBit HD does not understand that format.");
-        }
-      }
-
-      // Must be OK to be here
-      log.debug("Wallet file saved.");
-
-    } catch (IOException | UnsupportedOperationException e) {
-      throw new WalletSaveException("Cannot save wallet '" + walletFilename, e);
-    }
-  }
+//  public void saveWallet(Wallet wallet, String walletFilename) {
+//
+//    File walletFile = new File(walletFilename);
+//
+//    // Save the wallet file
+//    try (FileOutputStream fis = new FileOutputStream(walletFile)) {
+//      if (wallet != null) {
+//        log.debug("Saving wallet file '{}' ...", walletFile.getAbsolutePath());
+//        if (3 == wallet.getVersion()) { // 3 = PROTOBUF_ENCRYPTED
+//
+//          // Save as a Wallet message with a mandatory extension
+//          // to prevent loading by older versions of multibit.
+//          walletProtobufSerializer.writeWallet(wallet, fis);
+//        } else {
+//          throw new WalletVersionException("Cannot save wallet '" + walletFilename
+//                  + "'. Its wallet version is '" + wallet.getVersion()
+//                  + "' but this version of MultiBit HD does not understand that format.");
+//        }
+//      }
+//
+//      // Must be OK to be here
+//      log.debug("Wallet file saved.");
+//
+//    } catch (IOException | UnsupportedOperationException e) {
+//      throw new WalletSaveException("Cannot save wallet '" + walletFilename, e);
+//    }
+//  }
 
   /**
    * @param walletFile the wallet to test serialisation for
-   *
    * @return true if the wallet file specified is serialised (this format is no longer supported)
    */
   private boolean isWalletSerialised(File walletFile) {
@@ -418,7 +444,6 @@ public enum WalletManager implements WalletEventListener {
    * Create the name of the directory in which the wallet is stored
    *
    * @param walletId The wallet id to use
-   *
    * @return directoryName in which the wallet is stored.
    */
   public static String createWalletRoot(WalletId walletId) {
@@ -431,9 +456,7 @@ public enum WalletManager implements WalletEventListener {
    *
    * @param parentDirectory The root directory in which to create the directory
    * @param walletRoot      The name of the wallet which will be used to create a subdirectory
-   *
    * @return The directory composed of parentDirectory plus the walletRoot
-   *
    * @throws IllegalStateException if wallet could not be created
    */
   public static File getWalletDirectory(String parentDirectory, String walletRoot) {
@@ -460,7 +483,6 @@ public enum WalletManager implements WalletEventListener {
    * This is achieved by looking for directories with a name like <code>"mbhd-walletId"</code>
    *
    * @param directoryToSearch The directory to search
-   *
    * @return A list of files of wallet directories
    */
   public List<File> findWalletDirectories(File directoryToSearch) {
@@ -518,7 +540,7 @@ public enum WalletManager implements WalletEventListener {
     if (applicationDataDirectory != null && currentWalletData.isPresent()) {
 
       String walletFilename = applicationDataDirectory + File.separator + WALLET_DIRECTORY_PREFIX + SEPARATOR +
-        currentWalletData.get().getWalletId().toFormattedString() + File.separator + MBHD_WALLET_NAME;
+              currentWalletData.get().getWalletId().toFormattedString() + File.separator + MBHD_WALLET_NAME;
       return Optional.of(new File(walletFilename));
 
     } else {

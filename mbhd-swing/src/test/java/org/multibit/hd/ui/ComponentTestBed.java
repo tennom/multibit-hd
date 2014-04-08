@@ -125,7 +125,7 @@ public class ComponentTestBed {
 
     // Initialise the wallet manager, which will loadContacts the current wallet if available
     File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
-    WalletManager.INSTANCE.initialise(applicationDataDirectory);
+    WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(applicationDataDirectory, null);
 
     ContactService contactService = CoreServices.getOrCreateContactService(WalletManager.INSTANCE.getCurrentWalletData().get().getWalletId());
     contactService.addDemoContacts();

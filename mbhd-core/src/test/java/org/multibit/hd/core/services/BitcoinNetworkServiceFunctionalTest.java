@@ -96,7 +96,7 @@ public class BitcoinNetworkServiceFunctionalTest {
 
     // Create a random temporary directory and use it for wallet storage
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
-    walletManager.initialise(temporaryDirectory);
+    walletManager.initialiseAndLoadWalletFromConfig(temporaryDirectory, null);
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
 
     // Create a wallet from the WALLET_SEED_1_PROPERTY_NAME
@@ -136,7 +136,7 @@ public class BitcoinNetworkServiceFunctionalTest {
 
     // Create a random temporary directory to writeContacts the wallets
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
-    walletManager.initialise(temporaryDirectory);
+    walletManager.initialiseAndLoadWalletFromConfig(temporaryDirectory, null);
     BackupManager.INSTANCE.initialise(temporaryDirectory, null);
 
     // Create two wallets from the two seeds

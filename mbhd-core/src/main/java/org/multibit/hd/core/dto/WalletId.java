@@ -110,9 +110,15 @@ public class WalletId {
   /**
    * Create a WalletId from a wallet filename - the filename is parsed into a walletId byte array
    * The wallet filename should be the whole fire name e.g /herp/derp/mbhd-23bb865e-161bfefc-3020c418-66bf6f75-7fecdfcc/mbhd.wallet
+   *
+   * It can also have the suffix .wallet.aes
    * @return WalletId
    */
   public static WalletId parseWalletFilename(String walletFilename) {
+    if (walletFilename.endsWith(WalletManager.MBHD_AES_SUFFIX)) {
+      walletFilename = walletFilename.substring(0, walletFilename.length() - WalletManager.MBHD_AES_SUFFIX.length());
+    }
+
     File walletFile = new File(walletFilename);
 
     // Get the parent directory, in which the wallet id is embedded

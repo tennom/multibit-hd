@@ -90,7 +90,7 @@ public class BackupManagerTest {
     assertThat(walletData.getWalletId()).isEqualTo(recreatedWalletId);
 
     String walletFilename = WalletManager.getWalletDirectory(temporaryWalletParentDirectory.getAbsolutePath(), WalletManager.createWalletRoot(recreatedWalletId)) + File.separator + WalletManager.MBHD_WALLET_NAME;
-    WalletData recreatedWalletData = walletManager.loadFromFile(new File(walletFilename));
+    WalletData recreatedWalletData = walletManager.loadFromFile(new File(walletFilename), null);
 
     // Check there is the same key in the original wallet as in the recreated one
     assertThat(localBackups).isNotNull();

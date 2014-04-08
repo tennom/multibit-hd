@@ -74,7 +74,7 @@ public class ChoosePaymentRequestPanelView extends AbstractWizardPanelView<Payme
     List<PaymentRequestData> matchingPaymentRequestDataList = getWizardModel().getMatchingPaymentRequestList();
     paymentRequestDataJComboBox = ComboBoxes.newPaymentRequestsComboBox(this, matchingPaymentRequestDataList);
     paymentRequestDataJComboBox.setRenderer(new PaymentRequestDataListCellRenderer());
-    // initialise model to first payment request in case the user uses the initial setting
+    // initialiseAndLoadWalletFromConfig model to first payment request in case the user uses the initial setting
     if (matchingPaymentRequestDataList.size() > 0) {
       getWizardModel().setPaymentRequestData(matchingPaymentRequestDataList.get(0));
     }

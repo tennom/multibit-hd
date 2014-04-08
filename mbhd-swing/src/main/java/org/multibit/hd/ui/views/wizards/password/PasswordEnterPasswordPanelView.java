@@ -259,7 +259,7 @@ public class PasswordEnterPasswordPanelView extends AbstractWizardPanelView<Pass
       // TODO should be using WalletService
 
       // Attempt to open the current wallet
-      WalletManager.INSTANCE.initialise(InstallationManager.getOrCreateApplicationDataDirectory());
+      WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(InstallationManager.getOrCreateApplicationDataDirectory(), password);
 
       Optional<WalletData> walletDataOptional = WalletManager.INSTANCE.getCurrentWalletData();
       if (walletDataOptional.isPresent()) {

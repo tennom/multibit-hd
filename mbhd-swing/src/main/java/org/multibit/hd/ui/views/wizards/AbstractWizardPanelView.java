@@ -118,7 +118,7 @@ public abstract class AbstractWizardPanelView<M extends AbstractWizardModel, P> 
   }
 
   /**
-   * <p>Called when the wizard is first created to initialise the panel model.</p>
+   * <p>Called when the wizard is first created to initialiseAndLoadWalletFromConfig the panel model.</p>
    *
    * <p>This is called before {@link AbstractWizardPanelView#initialiseTitle(javax.swing.JPanel, org.multibit.hd.ui.languages.MessageKey)} ()}</p>
    *
@@ -143,7 +143,7 @@ public abstract class AbstractWizardPanelView<M extends AbstractWizardModel, P> 
    * <p>Implementers should set the layout and populate the components</p>
    * <h3>Example panel creation</h3>
    * <pre>
-   * ... initialise components ...
+   * ... initialiseAndLoadWalletFromConfig components ...
    *
    * contentPanel.setLayout(new MigLayout(
    *   Panels.migXYLayout(),
