@@ -144,7 +144,6 @@ public enum WalletManager implements WalletEventListener {
 
     // If a wallet directory is present try to load the wallet
     if (!walletDirectories.isEmpty()) {
-
       String walletFilename = walletDirectories.get(0) + File.separator + MBHD_WALLET_NAME + MBHD_AES_SUFFIX;
       WalletData walletData = loadFromFile(new File(walletFilename), password);
       currentWalletData = Optional.of(walletData);
@@ -269,7 +268,6 @@ public enum WalletManager implements WalletEventListener {
    * but it would be better in the wallet itself
    */
   public ECKey createAndAddNewWalletKey(Wallet wallet, CharSequence walletPassword, int indexToCreate) {
-
     Preconditions.checkState(wallet.getKeychainSize() > 0, "There is no 'first key' to derive subsequent keys from");
 
     // Get the private key from the first private key in the wallet - subsequent keys are derived from this.

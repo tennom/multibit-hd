@@ -3,8 +3,10 @@ package org.multibit.hd.core.services;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.HistoryEntry;
 import org.multibit.hd.core.dto.WalletId;
+import org.multibit.hd.core.exceptions.EncryptedFileReaderWriterException;
 import org.multibit.hd.core.exceptions.ExceptionHandler;
 import org.multibit.hd.core.exceptions.HistoryLoadException;
 import org.multibit.hd.core.exceptions.HistorySaveException;
@@ -15,10 +17,7 @@ import org.multibit.hd.core.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class PersistentHistoryService implements HistoryService {
 
   /**
    * <p>Create a HistoryService for a Wallet with the given walletId</p>
-   *
+   * <p/>
    * <p>Reduced visibility constructor to prevent accidental instance creation outside of CoreServices.</p>
    */
   PersistentHistoryService(WalletId walletId) {
@@ -64,7 +63,7 @@ public class PersistentHistoryService implements HistoryService {
     // Register for events
     CoreServices.uiEventBus.register(this);
 
-    // Work out where to writeContacts the contacts for this wallet id.
+    // Work out where to store the history for this wallet id.
     File applicationDataDirectory = InstallationManager.getOrCreateApplicationDataDirectory();
     String walletRoot = WalletManager.createWalletRoot(walletId);
 
@@ -151,14 +150,13 @@ public class PersistentHistoryService implements HistoryService {
   public void loadHistory() throws HistoryLoadException {
 
     log.debug("Loading history from '{}'", backingStoreFile.getAbsolutePath());
-
-    try (FileInputStream fis = new FileInputStream(backingStoreFile)) {
-
-      Set<HistoryEntry> loadedHistory = protobufSerializer.readHistoryEntries(fis);
+    try {
+      ByteArrayInputStream decryptedInputStream = EncryptedFileReaderWriter.readAndDecrypt(backingStoreFile, WalletManager.INSTANCE.getCurrentWalletData().get().getPassword());
+      Set<HistoryEntry> loadedHistory = protobufSerializer.readHistoryEntries(decryptedInputStream);
       history.clear();
       history.addAll(loadedHistory);
 
-    } catch (IOException e ) {
+    } catch (EncryptedFileReaderWriterException e) {
       ExceptionHandler.handleThrowable(new HistoryLoadException("Could not loadHistory history db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'."));
     }
   }
@@ -203,14 +201,13 @@ public class PersistentHistoryService implements HistoryService {
 
   @Override
   public void writeHistory() throws HistorySaveException {
-
     log.debug("Writing {} history(s)", history.size());
-
     try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+      protobufSerializer.writeHistoryEntries(history, byteArrayOutputStream);
+      EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), fos);
 
-      protobufSerializer.writeHistoryEntries(history, fos);
-
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new HistorySaveException("Could not save history db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");
     }
   }

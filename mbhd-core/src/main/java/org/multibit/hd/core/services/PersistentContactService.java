@@ -248,8 +248,7 @@ public class PersistentContactService implements ContactService {
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
       protobufSerializer.writeContacts(contacts, byteArrayOutputStream);
       EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), fos);
-
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new ContactsSaveException("Could not save contacts db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");
     }
   }

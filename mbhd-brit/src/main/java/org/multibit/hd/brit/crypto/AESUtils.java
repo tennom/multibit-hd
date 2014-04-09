@@ -1,11 +1,14 @@
 package org.multibit.hd.brit.crypto;
 
+import com.google.bitcoin.core.Utils;
 import com.google.bitcoin.crypto.KeyCrypterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.BufferedBlockCipher;
 import org.spongycastle.crypto.engines.AESFastEngine;
 import org.spongycastle.crypto.modes.CBCBlockCipher;
+import org.spongycastle.crypto.paddings.BlockCipherPadding;
+import org.spongycastle.crypto.paddings.PKCS7Padding;
 import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
@@ -48,7 +51,6 @@ public class AESUtils {
    * @param plainBytes           The unencrypted bytes for encryption
    * @param aesKey               The AES key to use for encryption
    * @param initialisationVector The initialisationVector to use whilst encrypting
-   *
    * @return The encrypted bytes
    */
   public static byte[] encrypt(byte[] plainBytes, KeyParameter aesKey, byte[] initialisationVector) throws KeyCrypterException {
@@ -62,13 +64,21 @@ public class AESUtils {
       ParametersWithIV keyWithIv = new ParametersWithIV(aesKey, initialisationVector);
 
       // Encrypt using AES
-      BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
+      BlockCipherPadding padding = new PKCS7Padding();
+      BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()), padding);
+      cipher.reset();
       cipher.init(true, keyWithIv);
-      byte[] encryptedBytes = new byte[cipher.getOutputSize(plainBytes.length)];
-      int length = cipher.processBytes(plainBytes, 0, plainBytes.length, encryptedBytes, 0);
+      int bufferLength = cipher.getOutputSize(plainBytes.length);
+      byte[] encryptedBytes = new byte[bufferLength];
+      int encryptedLength = cipher.processBytes(plainBytes, 0, plainBytes.length, encryptedBytes, 0);
 
-      cipher.doFinal(encryptedBytes, length);
+      encryptedLength += cipher.doFinal(encryptedBytes, encryptedLength);
 
+      if (encryptedLength != bufferLength) {
+        throw new KeyCrypterException("Unexpected behaviour : getOutputSize value incorrect");
+      }
+
+      log.debug("Encrypted bytes (after encrypt) = \n{}", Utils.bytesToHexString(encryptedBytes));
       return encryptedBytes;
     } catch (Exception e) {
       throw new KeyCrypterException("Could not encryptBytes bytes.", e);
@@ -82,9 +92,7 @@ public class AESUtils {
    * @param encryptedBytes       The encrypted bytes required to decryptBytes
    * @param aesKey               The AES key to use for decryption
    * @param initialisationVector The initialisationVector to use whilst decrypting
-   *
    * @return The decrypted bytes
-   *
    * @throws KeyCrypterException if bytes could not be decoded to a valid key
    */
 
@@ -94,11 +102,15 @@ public class AESUtils {
     checkNotNull(aesKey);
     checkNotNull(initialisationVector);
 
+    log.debug("Encrypted bytes (before decrypt) = \n{}", Utils.bytesToHexString(encryptedBytes));
+
     try {
       ParametersWithIV keyWithIv = new ParametersWithIV(new KeyParameter(aesKey.getKey()), initialisationVector);
 
       // Decrypt the message.
-      BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()));
+      BlockCipherPadding padding = new PKCS7Padding();
+      BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESFastEngine()), padding);
+      cipher.reset();
       cipher.init(false, keyWithIv);
 
       int minimumSize = cipher.getOutputSize(encryptedBytes.length);
