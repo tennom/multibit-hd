@@ -1,6 +1,8 @@
 package org.multibit.hd.brit.crypto;
 
 import com.google.bitcoin.crypto.KeyCrypterException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongycastle.crypto.BufferedBlockCipher;
 import org.spongycastle.crypto.engines.AESFastEngine;
 import org.spongycastle.crypto.modes.CBCBlockCipher;
@@ -20,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
  * @since 0.0.1
  */
 public class AESUtils {
+
+  private static final Logger log = LoggerFactory.getLogger(AESUtils.class);
 
   /**
    * Key length in bytes.

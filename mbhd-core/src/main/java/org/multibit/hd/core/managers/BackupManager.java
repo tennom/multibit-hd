@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.joda.time.DateTime;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.BackupSummary;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
@@ -252,7 +253,7 @@ public enum BackupManager {
     walletData.getWallet().saveToFile(walletBackupFile);
     log.debug("Created rolling-backup successfully. Size = " + walletBackupFile.length() + " bytes");
 
-    File encryptedAESCopy = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(walletBackupFile, password);
+    File encryptedAESCopy = EncryptedFileReaderWriter.makeAESEncryptedCopyAndDeleteOriginal(walletBackupFile, password);
     log.debug("Created rolling-backup AES copy successfully as file '{}'", encryptedAESCopy == null ? "null" : encryptedAESCopy.getAbsolutePath());
 
     List<File> rollingBackups = getRollingBackups(walletData.getWalletId()); // TODO swop to AES copies when .wallet copies are deleted

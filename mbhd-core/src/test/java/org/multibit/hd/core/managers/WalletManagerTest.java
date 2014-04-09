@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.multibit.hd.brit.seed_phrase.Bip39SeedPhraseGenerator;
 import org.multibit.hd.brit.seed_phrase.SeedPhraseGenerator;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.dto.WalletIdTest;
@@ -124,7 +125,7 @@ public class WalletManagerTest {
 
     // Save the wallet and read it back in again.
     newWallet.saveToFile(new File(newWalletFilename));
-    File encryptedNewWalletFile = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(new File(newWalletFilename), WALLET_PASSWORD);
+    File encryptedNewWalletFile = EncryptedFileReaderWriter.makeAESEncryptedCopyAndDeleteOriginal(new File(newWalletFilename), WALLET_PASSWORD);
 
     // Check the wallet and wallet info file exists.
     assertThat(encryptedNewWalletFile.exists()).isTrue();

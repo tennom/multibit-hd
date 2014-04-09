@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.joda.time.DateTime;
 import org.multibit.hd.brit.dto.FeeState;
 import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.BitcoinNetworkSummary;
 import org.multibit.hd.core.dto.CoreMessageKey;
 import org.multibit.hd.core.dto.WalletData;
@@ -177,7 +178,7 @@ public class BitcoinNetworkService extends AbstractService {
       try {
         File currentWalletFile = WalletManager.INSTANCE.getCurrentWalletFile().get();
         walletData.getWallet().saveToFile(currentWalletFile);
-        File encryptedAESCopy = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(currentWalletFile, walletData.getPassword());
+        File encryptedAESCopy = EncryptedFileReaderWriter.makeAESEncryptedCopyAndDeleteOriginal(currentWalletFile, walletData.getPassword());
         log.debug("Created AES encrypted wallet as file '{}', size {}", encryptedAESCopy == null ? "null" : encryptedAESCopy.getAbsolutePath(),
                 encryptedAESCopy == null ? "null" : encryptedAESCopy.length());
 

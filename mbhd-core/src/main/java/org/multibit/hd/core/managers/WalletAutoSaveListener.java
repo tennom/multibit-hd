@@ -2,6 +2,7 @@ package org.multibit.hd.core.managers;
 
 import com.google.bitcoin.wallet.WalletFiles;
 import com.google.common.base.Optional;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.WalletData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class WalletAutoSaveListener implements WalletFiles.Listener {
       try {
         // Save an encrypted copy of the wallet
         CharSequence password = walletData.get().getPassword();
-        File encryptedWalletFile = WalletManager.makeAESEncryptedCopyAndDeleteOriginal(newlySavedFile, password);
+        File encryptedWalletFile = EncryptedFileReaderWriter.makeAESEncryptedCopyAndDeleteOriginal(newlySavedFile, password);
         if (encryptedWalletFile != null && encryptedWalletFile.exists()) {
           log.debug("Save encrypted copy of wallet as '{}'. Size was {} bytes.", encryptedWalletFile.getAbsolutePath(), encryptedWalletFile.length());
         } else {

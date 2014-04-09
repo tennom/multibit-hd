@@ -8,12 +8,12 @@ import com.google.bitcoin.store.WalletProtobufSerializer;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.protobuf.ByteString;
 import org.bitcoinj.wallet.Protos;
 import org.multibit.hd.brit.crypto.AESUtils;
 import org.multibit.hd.brit.extensions.MatcherResponseWalletExtension;
 import org.multibit.hd.brit.extensions.SendFeeDtoWalletExtension;
 import org.multibit.hd.core.config.Configurations;
+import org.multibit.hd.core.crypto.EncryptedFileReaderWriter;
 import org.multibit.hd.core.dto.WalletData;
 import org.multibit.hd.core.dto.WalletId;
 import org.multibit.hd.core.events.CoreEvents;
@@ -21,7 +21,6 @@ import org.multibit.hd.core.events.TransactionSeenEvent;
 import org.multibit.hd.core.exceptions.WalletLoadException;
 import org.multibit.hd.core.exceptions.WalletVersionException;
 import org.multibit.hd.core.services.BitcoinNetworkService;
-import org.multibit.hd.core.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.asn1.sec.SECNamedCurves;
@@ -30,7 +29,6 @@ import org.spongycastle.crypto.params.KeyParameter;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -222,7 +220,7 @@ public enum WalletManager implements WalletEventListener {
         }
       }
       // Create a wallet with a single private key using the seed (modulo-ed), encrypted with the password
-      KeyCrypter keyCrypter = new KeyCrypterScrypt(makeScryptParameters());
+      KeyCrypter keyCrypter = new KeyCrypterScrypt(EncryptedFileReaderWriter.makeScryptParameters());
 
       Wallet walletToReturn = new Wallet(BitcoinNetworkService.NETWORK_PARAMETERS, keyCrypter);
       walletToReturn.setVersion(ENCRYPTED_WALLET_VERSION);
@@ -242,7 +240,7 @@ public enum WalletManager implements WalletEventListener {
 
       // Save it now to ensure it is on the disk
       walletToReturn.saveToFile(walletFile);
-      makeAESEncryptedCopyAndDeleteOriginal(walletFile, password);
+      EncryptedFileReaderWriter.makeAESEncryptedCopyAndDeleteOriginal(walletFile, password);
 
       if (Configurations.currentConfiguration != null) {
         Configurations.currentConfiguration.getApplicationConfiguration().setCurrentWalletRoot(walletRoot);
@@ -339,7 +337,7 @@ public enum WalletManager implements WalletEventListener {
           byte[] encryptedWalletBytes = org.multibit.hd.brit.utils.FileUtils.readFile(new File(walletFilename));
           log.debug("Encrypted wallet bytes after load:\n" + Utils.bytesToHexString(encryptedWalletBytes));
 
-          KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
+          KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(EncryptedFileReaderWriter.makeScryptParameters());
           KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
 
           // Decrypt the wallet bytes
@@ -524,48 +522,5 @@ public enum WalletManager implements WalletEventListener {
     } else {
       return Optional.absent();
     }
-  }
-
-  public static File makeAESEncryptedCopyAndDeleteOriginal(File fileToEncrypt, CharSequence password) throws IOException {
-    Preconditions.checkNotNull(password);
-    KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
-    KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
-    // TODO - cache keyParameter
-
-    // Read in the newlySavedFile
-    byte[] walletBytes = org.multibit.hd.brit.utils.FileUtils.readFile(fileToEncrypt);
-
-    // Create an AES encoded version of the newlySavedFile, using the wallet password
-    byte[] encryptedWalletBytes = AESUtils.encrypt(walletBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
-
-    log.debug("Encrypted wallet bytes (original):\n" + Utils.bytesToHexString(encryptedWalletBytes));
-
-    // Check that the encryption is reversible
-    byte[] rebornBytes = AESUtils.decrypt(encryptedWalletBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
-
-    if (Arrays.equals(walletBytes, rebornBytes)) {
-      // Save encrypted bytes
-      File encryptedWalletFilename = new File(fileToEncrypt.getAbsoluteFile() + WalletManager.MBHD_AES_SUFFIX);
-      ByteArrayInputStream encryptedWalletByteArrayInputStream = new ByteArrayInputStream(encryptedWalletBytes);
-      FileOutputStream encryptedWalletOutputStream = new FileOutputStream(encryptedWalletFilename);
-      FileUtils.writeFile(encryptedWalletByteArrayInputStream, encryptedWalletOutputStream);
-
-      if (encryptedWalletFilename.length() == encryptedWalletBytes.length) {
-        FileUtils.secureDelete(fileToEncrypt);
-      } else {
-        // The saved file isn't the correct size - do not delete the original
-        return null;
-      }
-
-      return encryptedWalletFilename;
-    } else {
-      log.error("The wallet encryption was not reversible. Aborting. This means your wallet is being stored unencrypted");
-      return null;
-    }
-  }
-
-  public static Protos.ScryptParameters makeScryptParameters() {
-    Protos.ScryptParameters.Builder scryptParametersBuilder = Protos.ScryptParameters.newBuilder().setSalt(ByteString.copyFrom(SCRYPT_SALT));
-    return scryptParametersBuilder.build();
   }
 }
