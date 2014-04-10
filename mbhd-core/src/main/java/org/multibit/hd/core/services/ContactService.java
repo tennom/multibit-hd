@@ -25,7 +25,7 @@ public interface ContactService {
   /**
    * The name of the contacts database (AES encrypted)
    */
-  String CONTACTS_DATABASE_NAME = "contacts.db.aes";
+  String CONTACTS_DATABASE_NAME = "contacts.aes";
 
   /**
    * @param name The mandatory name of the contact

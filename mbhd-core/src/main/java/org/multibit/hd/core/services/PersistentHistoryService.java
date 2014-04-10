@@ -202,10 +202,10 @@ public class PersistentHistoryService implements HistoryService {
   @Override
   public void writeHistory() throws HistorySaveException {
     log.debug("Writing {} history(s)", history.size());
-    try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
+    try {
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
       protobufSerializer.writeHistoryEntries(history, byteArrayOutputStream);
-      EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), fos);
+      EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), backingStoreFile);
 
     } catch (Exception e) {
       throw new HistorySaveException("Could not save history db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");

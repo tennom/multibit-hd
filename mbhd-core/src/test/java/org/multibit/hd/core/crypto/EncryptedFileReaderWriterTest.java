@@ -29,7 +29,6 @@ import org.spongycastle.crypto.params.KeyParameter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.SecureRandom;
 
@@ -76,7 +75,7 @@ public class EncryptedFileReaderWriterTest {
 
     File outputFile = new File(temporaryDirectory + File.separator + "outputFile.aes");
 
-    EncryptedFileReaderWriter.encryptAndWrite(TEST_BYTES1, PASSWORD1, new FileOutputStream(outputFile));
+    EncryptedFileReaderWriter.encryptAndWrite(TEST_BYTES1, PASSWORD1, outputFile);
     InputStream decryptedInputstream = EncryptedFileReaderWriter.readAndDecrypt(outputFile, PASSWORD1);
 
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -93,7 +92,5 @@ public class EncryptedFileReaderWriterTest {
     assertThat(Utils.bytesToHexString(buffer.toByteArray())).isEqualTo(Utils.bytesToHexString(TEST_BYTES1));
 
     decryptedInputstream.close();
-
-
   }
 }

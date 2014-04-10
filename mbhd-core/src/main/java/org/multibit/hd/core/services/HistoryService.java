@@ -25,7 +25,7 @@ public interface HistoryService {
   /**
    * The name of the history database (AES encrypted)
    */
-  String HISTORY_DATABASE_NAME = "history.db.aes";
+  String HISTORY_DATABASE_NAME = "history.aes";
 
   /**
    * @param description The MultiBit description of what happened

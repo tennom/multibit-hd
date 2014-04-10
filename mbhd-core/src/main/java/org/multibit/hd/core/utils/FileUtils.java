@@ -1,5 +1,6 @@
 package org.multibit.hd.core.utils;
 
+import com.google.bitcoin.core.Utils;
 import com.google.common.base.Preconditions;
 import org.multibit.hd.core.managers.BackupManager;
 import org.multibit.hd.core.managers.InstallationManager;
@@ -101,19 +102,20 @@ public class FileUtils {
   }
 
   /**
-    * Work out the file part of a filename
-    *
-    * @param name of file
-    * @return file part of filename
-    */
-   public static String filePart(String name) {
-     int s = name.lastIndexOf(File.separatorChar);
-     if (s == -1) {
-       return name;
-     } else {
-       return name.substring(s + 1);
-     }
-   }
+   * Work out the file part of a filename
+   *
+   * @param name of file
+   * @return file part of filename
+   */
+  public static String filePart(String name) {
+    int s = name.lastIndexOf(File.separatorChar);
+    if (s == -1) {
+      return name;
+    } else {
+      return name.substring(s + 1);
+    }
+  }
+
   public static void createDirectoryIfNecessary(File directoryToCreate) {
     if (!directoryToCreate.exists()) {
       Preconditions.checkState(directoryToCreate.mkdir(), "Could not create the directory of '" + directoryToCreate + "'");
@@ -158,7 +160,7 @@ public class FileUtils {
   /**
    * Write a file from the inputstream to the outputstream
    */
-  public static void writeFile(InputStream in, OutputStream out)
+  public static void writeFile(InputStream in, FileOutputStream out)
           throws IOException {
     byte[] buffer = new byte[1024];
     int len;
@@ -167,7 +169,42 @@ public class FileUtils {
       out.write(buffer, 0, len);
 
     in.close();
+
+    out.flush();
+    out.getFD().sync();
     out.close();
+  }
+
+  /**
+   * Saves the input stream first to the given temp file, then renames to the destFile.
+   */
+  public static void writeFile(InputStream inputStream, File temp, File destFile) throws IOException {
+    FileOutputStream tempStream = null;
+
+    try {
+      tempStream = new FileOutputStream(temp);
+      writeFile(inputStream, tempStream);
+      // Attempt to force the bits to hit the disk. In reality the OS or hard disk itself may still decide
+      // to not write through to physical media for at least a few seconds, but this is the best we can do.
+      tempStream = null;
+      if (Utils.isWindows()) {
+        // Work around an issue on Windows whereby you can't rename over existing files.
+        File canonical = destFile.getCanonicalFile();
+        canonical.delete();
+        if (temp.renameTo(canonical))
+          return;  // else fall through.
+        throw new IOException("Failed to rename " + temp + " to " + canonical);
+      } else if (!temp.renameTo(destFile)) {
+        throw new IOException("Failed to rename " + temp + " to " + destFile);
+      }
+    } catch (RuntimeException e) {
+      log.error("Failed whilst saving wallet", e);
+      throw e;
+    } finally {
+      if (tempStream != null) {
+        tempStream.close();
+      }
+    }
   }
 
   /**
@@ -275,8 +312,8 @@ public class FileUtils {
           String name = entry.getName();
 
           writeFile(zipFile.getInputStream(entry),
-                  new BufferedOutputStream(new FileOutputStream(
-                          directoryToExtractTo + File.separator + name)));
+                  new FileOutputStream(
+                          directoryToExtractTo + File.separator + name));
         }
       }
     } finally {

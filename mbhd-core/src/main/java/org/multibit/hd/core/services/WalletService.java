@@ -50,7 +50,7 @@ public class WalletService {
   /**
    * The name of the protobuf file containing additional payments information, AES encrypted
    */
-  public static final String PAYMENTS_DATABASE_NAME = "payments.db.aes";
+  public static final String PAYMENTS_DATABASE_NAME = "payments.aes";
 
   /**
    * The text separator used in localising To: and By: prefices
@@ -596,13 +596,13 @@ public class WalletService {
    */
   public void writePayments() throws PaymentsSaveException {
     Preconditions.checkNotNull(backingStoreFile, "There is no backingStoreFile. Please initialiseAndLoadWalletFromConfig WalletService.");
-     try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
+     try {
        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
        Payments payments = new Payments(lastIndexUsed);
        payments.setTransactionInfos(transactionInfoMap.values());
        payments.setPaymentRequestDatas(paymentRequestMap.values());
        protobufSerializer.writePayments(payments, byteArrayOutputStream);
-       EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), fos);
+       EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), backingStoreFile);
 
      } catch (Exception e) {
        throw new PaymentsSaveException("Could not write payments db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");

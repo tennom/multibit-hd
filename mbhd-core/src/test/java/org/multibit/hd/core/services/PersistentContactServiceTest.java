@@ -3,7 +3,12 @@ package org.multibit.hd.core.services;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
+import org.multibit.hd.brit.seed_phrase.Bip39SeedPhraseGenerator;
+import org.multibit.hd.brit.seed_phrase.SeedPhraseGenerator;
 import org.multibit.hd.core.dto.Contact;
+import org.multibit.hd.core.dto.WalletIdTest;
+import org.multibit.hd.core.managers.BackupManager;
+import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.managers.WalletManagerTest;
 
 import java.io.File;
@@ -16,22 +21,29 @@ public class PersistentContactServiceTest {
 
   private PersistentContactService contactService;
 
+  private static final String PASSWORD = "jiminyCricket";
+
   @Before
   public void setUp() throws Exception {
 
     File temporaryDirectory = WalletManagerTest.makeRandomTemporaryDirectory();
     File contactDbFile = new File(temporaryDirectory.getAbsolutePath() + File.separator + ContactService.CONTACTS_DATABASE_NAME);
 
+    SeedPhraseGenerator seedGenerator = new Bip39SeedPhraseGenerator();
+    byte[] seed1 = seedGenerator.convertToSeed(Bip39SeedPhraseGenerator.split(WalletIdTest.SEED_PHRASE_1));
+
+    WalletManager.INSTANCE.initialiseAndLoadWalletFromConfig(temporaryDirectory, "no-password");
+    BackupManager.INSTANCE.initialise(temporaryDirectory, null);
+    WalletManager.INSTANCE.createWallet(temporaryDirectory.getAbsolutePath(), seed1, PASSWORD);
+
     contactService = new PersistentContactService(contactDbFile);
     contactService.addDemoContacts();
-
   }
 
   @Test
   public void testNewContact() throws Exception {
 
     assertThat(contactService.newContact("Fred Bloggs").getName()).isEqualTo("Fred Bloggs");
-
   }
 
   @Test

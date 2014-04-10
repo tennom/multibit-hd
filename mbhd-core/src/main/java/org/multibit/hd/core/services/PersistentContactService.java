@@ -42,12 +42,12 @@ public class PersistentContactService implements ContactService {
   private final Set<Contact> contacts = Sets.newHashSet();
 
   /**
-   * The location of the backing writeContacts for the contacts
+   * The location of the backing store for the contacts
    */
   private File backingStoreFile;
 
   /**
-   * The serializer for the backing writeContacts
+   * The serializer for the backing store
    */
   private ContactsProtobufSerializer protobufSerializer;
 
@@ -244,10 +244,10 @@ public class PersistentContactService implements ContactService {
 
     log.debug("Writing {} contact(s)", contacts.size());
 
-    try (FileOutputStream fos = new FileOutputStream(backingStoreFile)) {
+    try {
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
       protobufSerializer.writeContacts(contacts, byteArrayOutputStream);
-      EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), fos);
+      EncryptedFileReaderWriter.encryptAndWrite(byteArrayOutputStream.toByteArray(), WalletManager.INSTANCE.getCurrentWalletData().get().getPassword(), backingStoreFile);
     } catch (Exception e) {
       throw new ContactsSaveException("Could not save contacts db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.");
     }

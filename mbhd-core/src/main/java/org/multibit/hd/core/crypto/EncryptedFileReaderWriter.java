@@ -31,6 +31,7 @@ import java.util.Arrays;
 public class EncryptedFileReaderWriter {
   private static final Logger log = LoggerFactory.getLogger(WalletManager.class);
 
+  private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   /**
    * Decrypt an AES encrypted file and return it as an input Stream
@@ -56,12 +57,12 @@ public class EncryptedFileReaderWriter {
   }
 
   /**
-   * Encrypt a byte array and output to a file output stream
+   * Encrypt a byte array and output to a file, using an intermediate temporary file
    */
-  public static void encryptAndWrite(byte[] unencryptedBytes, CharSequence password, FileOutputStream fileOutputStream) throws EncryptedFileReaderWriterException {
+  public static void encryptAndWrite(byte[] unencryptedBytes, CharSequence password, File outputFile) throws EncryptedFileReaderWriterException {
     try {
       KeyCrypterScrypt keyCrypterScrypt = new KeyCrypterScrypt(makeScryptParameters());
-       KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
+      KeyParameter keyParameter = keyCrypterScrypt.deriveKey(password);
 
       // Create an AES encoded version of the unencryptedBytes, using the password
       byte[] encryptedBytes = AESUtils.encrypt(unencryptedBytes, keyParameter, WalletManager.AES_INITIALISATION_VECTOR);
@@ -75,7 +76,8 @@ public class EncryptedFileReaderWriter {
         // Save encrypted bytes
 
         ByteArrayInputStream encryptedWalletByteArrayInputStream = new ByteArrayInputStream(encryptedBytes);
-        FileUtils.writeFile(encryptedWalletByteArrayInputStream, fileOutputStream);
+        File temporaryFile = new File(outputFile.getAbsolutePath() + TEMPORARY_FILE_EXTENSION);
+        FileUtils.writeFile(encryptedWalletByteArrayInputStream, temporaryFile, outputFile);
       } else {
         throw new EncryptedFileReaderWriterException("The encryption was not reversible so aborting.");
       }
