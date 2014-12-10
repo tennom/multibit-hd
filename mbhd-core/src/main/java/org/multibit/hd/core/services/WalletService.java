@@ -31,6 +31,8 @@ import org.multibit.hd.core.store.TransactionInfo;
 import org.multibit.hd.core.utils.Coins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.multibit.hd.core.store.TemplatesProtobufSerializer;
+import org.multibit.hd.core.store.TemplateData;
 import org.spongycastle.crypto.params.KeyParameter;
 
 import java.io.ByteArrayInputStream;
@@ -63,6 +65,11 @@ public class WalletService {
    */
   public static final String PAYMENTS_DATABASE_NAME = "payments.aes";
 
+    /**
+     * The name of the protobuf file containing templates information, AES encrypted
+     */
+    public static final String TEMPLATES_DATABASE_NAME = "templates.aes";
+
   /**
    * The text separator used in localising To: and By: prefices
    */
@@ -78,10 +85,20 @@ public class WalletService {
    */
   private File backingStoreFile;
 
+    /**
+     * The location of the backing write for the templates
+     */
+    private File backingTemplateFile;
+
   /**
    * The serializer for the backing store
    */
   private PaymentsProtobufSerializer protobufSerializer;
+
+    /**
+     * the serializer for the template backing store
+     */
+    private TemplatesProtobufSerializer templatesProtobufSerializer;
 
   /**
    * The payment requests in a map, indexed by the bitcoin address
@@ -94,9 +111,16 @@ public class WalletService {
   private final Map<String, TransactionInfo> transactionInfoMap = Maps.newHashMap();
 
   /**
+   * The additional templates information, in the form of a map, index by the template hash
+   */
+  private final Map<String, TemplateData> templateDataMap = Maps.newHashMap();
+
+  /**
    * The wallet id that this WalletService is using
    */
   private WalletId walletId;
+
+  private List<TemplateData> templateDataList = Lists.newArrayList();
 
   /**
    * The undo stack for undeleting payment requests
@@ -145,6 +169,9 @@ public class WalletService {
 
     if (backingStoreFile.exists()) {
       readPayments();
+    }
+    if (backingTemplateFile.exists()) {
+      readTemplates();
     }
   }
 
@@ -196,6 +223,20 @@ public class WalletService {
     //log.debug("lastSeenPaymentDataList:\n" + lastSeenPaymentDataList.toString());
     return lastSeenPaymentDataList;
   }
+
+    /**
+     * <p>Get all the payments (payments and payment requests) in the current wallet.</p>
+     * <h3>WARNING: This is moderately expensive so don't call it indiscriminately</h3>
+     */
+    public List<TemplateData> getTemplateDataList() {
+        // Determine which paymentRequests have not been fully funded (these will appear as independent entities in the UI)
+        Set<TemplateData> templateDatas = Sets.newHashSet();
+        for (TemplateData templateData : templateDataMap.values()) {
+            templateDatas.add(templateData);
+        }
+        return Lists.newArrayList(templateDatas);
+
+    }
 
   /**
    * Subset the supplied payments and sort by date, descending
@@ -693,6 +734,46 @@ public class WalletService {
     }
   }
 
+    /**
+     * <p>Populate the internal cache of Templates from the backing store</p>
+     * this will a general runtime exceptions with the path of templates file
+     * directory showing in the error.
+     */
+    public void readTemplates() throws PaymentsLoadException {
+
+        Preconditions.checkNotNull(backingTemplateFile, "There is no backingStoreFile. Please initialise WalletService.");
+
+        try {
+
+            log.debug("Reading payments from '{}'", backingTemplateFile.getAbsolutePath());
+
+            ByteArrayInputStream decryptedInputStream = EncryptedFileReaderWriter.readAndDecrypt(
+                    backingTemplateFile,
+                    WalletManager.INSTANCE.getCurrentWalletSummary().get().getPassword(),
+                    WalletManager.SCRYPT_SALT,
+                    WalletManager.AES_INITIALISATION_VECTOR);
+
+            Payments templates = templatesProtobufSerializer.readTemplates(decryptedInputStream);
+
+            // For quick access templates stored in maps
+
+
+            Collection<TemplateData> templateDatas = templates.getTemplateDatas();
+            if (templateDatas != null) {
+                templateDataMap.clear();
+                for (TemplateData templateData : templateDatas) {
+                    templateDataMap.put(templateData.getHash(), templateData);
+                }
+            }
+
+            log.debug("Reading templates completed");
+
+        } catch (EncryptedFileReaderWriterException e) {
+            ExceptionHandler.handleThrowable(new PaymentsLoadException("Could not load payments db '" + backingTemplateFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'."));
+        }
+    }
+
+
   /**
    * <p>Save the payments data to the backing store</p>
    */
@@ -724,6 +805,47 @@ public class WalletService {
     }
   }
 
+
+    /**
+     * <p>Save the templates data to the backing store</p>
+     */
+
+    public void writeTemplates() throws PaymentsLoadException {
+
+        Preconditions.checkNotNull(backingTemplateFile, "'backingTemplateFile' must be present. Initialise WalletService.");
+        Preconditions.checkState(WalletManager.INSTANCE.getCurrentWalletSummary().isPresent(), "Current wallet summary must be present");
+
+        try {
+
+            log.debug("Writing templates to '{}'", backingTemplateFile.getAbsolutePath());
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+            Payments templates = new Payments();
+            templates.setTemplateDatas(templateDataMap.values());
+
+/*      File statText = new File("/home/herder/Desktop/some.txt");
+      FileOutputStream is = new FileOutputStream(statText);
+      OutputStreamWriter osw = new OutputStreamWriter(is);
+      Writer w = new BufferedWriter(osw);
+      w.write(templateDataMap.values().toString());
+      w.close();*/
+
+
+            templatesProtobufSerializer.writeTemplates(templates, byteArrayOutputStream);
+            EncryptedFileReaderWriter.encryptAndWrite(
+                    byteArrayOutputStream.toByteArray(),
+                    WalletManager.INSTANCE.getCurrentWalletSummary().get().getPassword(),
+                    backingTemplateFile
+            );
+
+            log.debug("Writing templates completed");
+
+        } catch (Exception e) {
+            log.error("Could not write to templates db '{}'. backingTemplateFile.getAbsolutePath()", e);
+            throw new PaymentsLoadException("Could not write templates db '" + backingStoreFile.getAbsolutePath() + "'. Error was '" + e.getMessage() + "'.", e);
+        }
+    }
+
   public WalletId getWalletId() {
     return walletId;
   }
@@ -737,6 +859,10 @@ public class WalletService {
   public void addTransactionInfo(TransactionInfo transactionInfo) {
     transactionInfoMap.put(transactionInfo.getHash(), transactionInfo);
   }
+
+    public void addTemplateData(TemplateData templateData) {
+        templateDataMap.put(templateData.getHash(), templateData);
+    }
 
   List<PaymentRequestData> getPaymentRequests() {
     return Lists.newArrayList(paymentRequestMap.values());
@@ -933,6 +1059,7 @@ public class WalletService {
         contactService.writeContacts();
         historyService.writeHistory();
         walletService.writePayments();
+        walletService.writeTemplates();
 
         wallet.encrypt(newPassword);
 
@@ -1010,6 +1137,7 @@ public class WalletService {
 
     try {
       writePayments();
+      writeTemplates();
     } catch (PaymentsSaveException pse) {
       // Cannot do much as shutting down
       log.error("Failed to write payments.", pse);
