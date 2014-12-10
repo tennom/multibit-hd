@@ -72,6 +72,9 @@ public class Screens {
       case TRANSACTIONS:
         view = new PaymentsScreenView(new PaymentsScreenModel(screen), screen, MessageKey.CONTACTS);
         break;
+      case TEMPLATES:
+        view = new TemplatesScreenView(new TemplatesScreenModel(screen), screen, MessageKey.TEMPLATES);
+        break;
       case HELP:
         view = new HelpScreenView(new HelpScreenModel(screen), screen, MessageKey.CONTACTS);
         break;

@@ -19,6 +19,7 @@ import org.multibit.hd.core.managers.WalletManager;
 import org.multibit.hd.core.services.BitcoinNetworkService;
 import org.multibit.hd.core.services.CoreServices;
 import org.multibit.hd.core.services.WalletService;
+import org.multibit.hd.core.store.TemplateData;
 import org.multibit.hd.core.store.TransactionInfo;
 import org.multibit.hd.core.utils.Coins;
 import org.multibit.hd.ui.views.wizards.AbstractWizardModel;
@@ -73,6 +74,7 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
   private final NetworkParameters networkParameters = BitcoinNetwork.current().get();
   private final boolean emptyWallet;
   private final Optional<BitcoinURI> bitcoinURI;
+  private final TemplateData templateData;
 
   /**
    * The SendRequestSummary that initially contains all the tx details, and then is signed prior to sending
@@ -88,8 +90,17 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
 
     this.bitcoinURI = parameter.getBitcoinURI();
     this.emptyWallet = parameter.isEmptyWallet();
+    this.templateData = null;
 
   }
+//overloading the contructor to provide template data feed in access
+    public SendBitcoinWizardModel(SendBitcoinState state, SendBitcoinParameter parameter, TemplateData templateData) {
+        super(state);
+
+        this.bitcoinURI = parameter.getBitcoinURI();
+        this.emptyWallet = parameter.isEmptyWallet();
+        this.templateData = templateData;
+    }
 
   @Override
   public void showNext() {
@@ -156,6 +167,18 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
             .getEnterAmountModel()
             .getLocalAmount();
   }
+
+    /**
+     * get the template data from selected template table
+     */
+    public TemplateData getTemplateData() {
+        return this.templateData;
+    }
+
+    /**
+     * rerurn empty wallet status
+     */
+    public boolean getEmptyWallet() {return this.emptyWallet;}
 
   /**
    * @return The password the user entered
@@ -225,6 +248,11 @@ public class SendBitcoinWizardModel extends AbstractWizardModel<SendBitcoinState
   public SendRequestSummary getSendRequestSummary() {
     return sendRequestSummary;
   }
+
+    /**
+     * for template to feed in data
+     */
+    public void SetSendRequestSummary(SendRequestSummary sendRequestSummary) { this.sendRequestSummary = sendRequestSummary;}
 //
 //  @Subscribe
 //  public void onTransactionCreationEvent(TransactionCreationEvent transactionCreationEvent) {

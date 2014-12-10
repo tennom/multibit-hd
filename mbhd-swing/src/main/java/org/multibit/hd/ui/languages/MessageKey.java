@@ -440,6 +440,11 @@ public enum MessageKey {
   DETAILS("details"),
   EXPORT("export"),
   DELETE_PAYMENT_REQUEST("delete_payment_request"),
+  //  access template through a button for now
+  TEMPLATES("templates"),
+  TEMPLATES_TOOLTIP("templates_tooltip"),
+  LABEL("label"),
+
   TRANSACTION_OVERVIEW("transaction_overview"),
   TRANSACTION_AMOUNT("transaction_amount"),
   TRANSACTION_DETAIL("transaction_detail"),

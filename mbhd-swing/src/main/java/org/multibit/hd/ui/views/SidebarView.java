@@ -226,12 +226,14 @@ public class SidebarView extends AbstractView {
       // Add standard wallet nodes at the soft-wallet level
       walletNode.add(TreeNodes.newSidebarTreeNode(MessageKey.SEND_OR_REQUEST, Screen.SEND_REQUEST));
       walletNode.add(TreeNodes.newSidebarTreeNode(MessageKey.PAYMENTS, Screen.TRANSACTIONS));
+      walletNode.add(TreeNodes.newSidebarTreeNode(MessageKey.TEMPLATES, Screen.TEMPLATES));
       walletNode.add(TreeNodes.newSidebarTreeNode(MessageKey.CONTACTS, Screen.CONTACTS));
       root.add(walletNode);
     } else {
       // Add standard wallet nodes at the root level
       root.add(TreeNodes.newSidebarTreeNode(MessageKey.SEND_OR_REQUEST, Screen.SEND_REQUEST));
       root.add(TreeNodes.newSidebarTreeNode(MessageKey.PAYMENTS, Screen.TRANSACTIONS));
+      root.add(TreeNodes.newSidebarTreeNode(MessageKey.TEMPLATES, Screen.TEMPLATES));
       root.add(TreeNodes.newSidebarTreeNode(MessageKey.CONTACTS, Screen.CONTACTS));
     }
 

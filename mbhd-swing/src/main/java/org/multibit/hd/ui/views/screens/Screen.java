@@ -21,6 +21,11 @@ public enum Screen {
    */
   TRANSACTIONS,
 
+
+  /**
+   * templates
+   */
+  TEMPLATES,
   /**
    * The wallet contacts screen
    */

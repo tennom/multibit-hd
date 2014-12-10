@@ -7,6 +7,7 @@ import org.multibit.hd.core.config.Configuration;
 import org.multibit.hd.core.config.Configurations;
 import org.multibit.hd.core.dto.*;
 import org.multibit.hd.core.managers.WalletManager;
+import org.multibit.hd.core.store.TemplateData;
 import org.multibit.hd.ui.views.wizards.about.AboutState;
 import org.multibit.hd.ui.views.wizards.about.AboutWizard;
 import org.multibit.hd.ui.views.wizards.about.AboutWizardModel;
@@ -148,6 +149,15 @@ public class Wizards {
     return new SendBitcoinWizard(new SendBitcoinWizardModel(SendBitcoinState.SEND_ENTER_AMOUNT, parameter));
 
   }
+
+
+    public static SendBitcoinWizard newSendBitcoinWizard(SendBitcoinParameter parameter, TemplateData templateData) {
+
+        log.debug("New 'Send template wizard'");
+
+        return new SendBitcoinWizard(new SendBitcoinWizardModel(SendBitcoinState.SEND_CONFIRM_AMOUNT, parameter, templateData));
+
+    }
 
   /**
    * @return A new "request bitcoin" wizard
