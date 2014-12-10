@@ -19,6 +19,8 @@ public class Payments {
 
   private Collection<TransactionInfo> transactionInfos;
 
+  private Collection<TemplateData> templateDatas;
+
   public Payments() {
     this.paymentRequestDatas = Lists.newArrayList();
     this.transactionInfos = Lists.newArrayList();
@@ -39,4 +41,12 @@ public class Payments {
   public void setTransactionInfos(Collection<TransactionInfo> transactionInfos) {
     this.transactionInfos = transactionInfos;
   }
+  public Collection<TemplateData> getTemplateDatas() {
+        return templateDatas;
+    }
+
+  public void setTemplateDatas(Collection<TemplateData> templateDatas) {
+        this.templateDatas = templateDatas;
+    }
+
 }
